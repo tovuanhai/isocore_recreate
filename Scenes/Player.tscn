@@ -184,6 +184,7 @@ _data = {
 }
 
 [node name="Player" type="CharacterBody2D"]
+visibility_layer = 2
 z_index = 2
 motion_mode = 1
 script = ExtResource("1_kyqiw")
@@ -232,4 +233,6 @@ script = ExtResource("6_52ee3")
 script = ExtResource("7_bhhdu")
 
 [node name="Camera2D" type="Camera2D" parent="."]
+light_mask = 0
+visibility_layer = 3
 zoom = Vector2(6, 6)

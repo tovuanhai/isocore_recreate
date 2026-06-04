@@ -3,7 +3,7 @@
 [ext_resource type="TileSet" uid="uid://0u8hh8mx7hqj" path="res://Scenes/World.tres" id="1_5cjrv"]
 [ext_resource type="Script" uid="uid://dhqx1aw1r1gr5" path="res://Scripts/tile_map.gd" id="1_p70al"]
 [ext_resource type="PackedScene" uid="uid://dw82ffshcw0we" path="res://Scenes/Player.tscn" id="3_5nsto"]
-[ext_resource type="Script" uid="uid://btobmcagan3m3" path="res://Scripts/canvas_layer.gd" id="5_p70al"]
+[ext_resource type="PackedScene" uid="uid://dm2gsuvv6qynt" path="res://Scenes/UI.tscn" id="4_gjpho"]
 
 [node name="Root" type="Node2D"]
 y_sort_enabled = true
@@ -25,9 +25,4 @@ tile_set = ExtResource("1_5cjrv")
 [node name="Player" parent="." instance=ExtResource("3_5nsto")]
 position = Vector2(-16, -7)
 
-[node name="CanvasLayer" type="CanvasLayer" parent="."]
-
-[node name="FPSCounter" type="Label" parent="CanvasLayer"]
-offset_right = 40.0
-offset_bottom = 23.0
-script = ExtResource("5_p70al")
+[node name="CanvasLayer" parent="." instance=ExtResource("4_gjpho")]
