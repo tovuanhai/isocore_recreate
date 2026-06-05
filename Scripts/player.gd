@@ -5,7 +5,7 @@ extends CharacterBody2D
 @onready var anim_player: AnimationPlayer = $AnimationPlayer
 @onready var tile_map_node: Node2D = $"../TileMap"
 @onready var visual_root: Node2D = $VisualRoot
-@onready var sprite: Sprite2D = $VisualRoot/Sprite2D2
+@onready var sprite: Sprite2D = $VisualRoot/Sprite2D
 
 var _last_elev_cell: Vector2i = Vector2i(9999, 9999)
 var current_path: Array[Vector2] = []
@@ -19,21 +19,26 @@ var tile_durability: Dictionary = {}
 
 @export var cliff_height: int = 6
 var current_elevation: int = 0
-
-var base_sprite_offset: Vector2 = Vector2.ZERO
 var z_shift_y: float = 0.0
 var elevation_tween: Tween
 
 
 func _ready() -> void:
+	# 🔒 TRẢ LẠI QUYỀN LỰC CHO Y-SORT GỐC CỦA GODOT
+	z_index = 0
 	y_sort_enabled = true
-	z_index = current_elevation + 1
 	
+	# Khóa Y-Sort của các node con để tránh tự cắt xén hình ảnh
 	if visual_root:
-		visual_root.y_sort_enabled = true
+		visual_root.z_index = 0
+		visual_root.y_sort_enabled = false
 	if sprite:
-		sprite.y_sort_enabled = true
-		base_sprite_offset = sprite.offset
+		sprite.z_index = 0
+		sprite.y_sort_enabled = false
+
+	# Nhập hộ khẩu Player vào TileMap để đọ xa gần với từng viên gạch
+	if tile_map_node:
+		call_deferred("reparent", tile_map_node)
 
 
 func _physics_process(_delta: float) -> void:
@@ -47,11 +52,10 @@ func _physics_process(_delta: float) -> void:
 
 
 func _process(_delta: float) -> void:
+	# 🎯 BẢO VỆ ANIMATION: Chỉ dịch chuyển Node tổng VisualRoot để tạo độ cao.
+	# Tuyệt đối không can thiệp vào Sprite, để AnimationPlayer của ông tự do hoạt động!
 	if visual_root:
-		visual_root.position = Vector2(0, z_shift_y)
-		
-	if sprite:
-		sprite.offset = base_sprite_offset
+		visual_root.position.y = z_shift_y
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -117,7 +121,6 @@ func _update_player_elevation(cell: Vector2i) -> void:
 		return
 	
 	current_elevation = target_elev
-	
 	var ch = tile_map_node.cliff_height if tile_map_node else cliff_height
 	var target_shift = float(- (ch * current_elevation))
 	
@@ -125,8 +128,5 @@ func _update_player_elevation(cell: Vector2i) -> void:
 		elevation_tween.kill()
 	
 	elevation_tween = get_tree().create_tween()
-	elevation_tween.tween_property(self, "z_shift_y", target_shift, 0.12) \
+	elevation_tween.tween_property(self, "z_shift_y", target_shift, 0.15) \
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-	
-	# 🎯 CHÂN LÝ: Đồng bộ Z-Index tịnh tiến chuẩn ý ông để so kè Y-Sort với tầng trên liền kề!
-	z_index = current_elevation + 1
