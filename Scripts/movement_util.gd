@@ -2,9 +2,10 @@ extends Node
 
 var astar = AStar2D.new()
 
-# Giải toán băm tọa độ Vector2i tránh tràn số nguyên cực kỳ bảo mật
+
 func cell_to_id(cell: Vector2i) -> int:
 	return (cell.x + 10000) + (cell.y + 10000) * 20000
+
 
 func update_grid(tile_map: Node2D) -> void:
 	astar.clear()
@@ -20,7 +21,6 @@ func update_grid(tile_map: Node2D) -> void:
 	
 	var walkable_cells = []
 	
-	# Bước 1: Thêm các nút đất khả dụng vào bảng AStar
 	for x in range(start_x, end_x):
 		for y in range(start_y, end_y):
 			var cell = Vector2i(x, y)
@@ -32,7 +32,6 @@ func update_grid(tile_map: Node2D) -> void:
 				astar.add_point(id, world_pos)
 				walkable_cells.append({"cell": cell, "elev": elev, "id": id})
 	
-	# Bước 2: Chỉ kết nối đường đi nếu dốc cao lệch nhau chuẩn chỉ <= 1 tầng
 	var directions = [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]
 	
 	for data in walkable_cells:
@@ -42,9 +41,9 @@ func update_grid(tile_map: Node2D) -> void:
 			
 			if astar.has_point(neighbor_id):
 				var neighbor_elev = tile_map.get_cell_elevation(neighbor_cell)
-				# 🚨 LUẬT JOHNBRX: Chênh lệch > 1 tầng (vách thẳng đứng) -> CẤM NỐI ĐƯỜNG!
 				if neighbor_elev != -1 and abs(data.elev - neighbor_elev) <= 1:
 					astar.connect_points(data.id, neighbor_id)
+
 
 func get_path_cells(start_cell: Vector2i, end_cell: Vector2i) -> Array[Vector2i]:
 	var start_id = cell_to_id(start_cell)
@@ -56,7 +55,6 @@ func get_path_cells(start_cell: Vector2i, end_cell: Vector2i) -> Array[Vector2i]
 	var id_path = astar.get_id_path(start_id, end_id)
 	var result_path: Array[Vector2i] = []
 	
-	# Giải mã ngược từ ID băm ra lại Vector2i ô lưới nguyên bản
 	for id in id_path:
 		var y = int(id / 20000) - 10000
 		var x = (id % 20000) - 10000

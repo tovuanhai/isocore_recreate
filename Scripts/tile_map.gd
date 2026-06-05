@@ -50,6 +50,8 @@ func _ready() -> void:
 
 func setup_elevation_layers() -> void:
 	y_sort_enabled = true
+	ground_layers.clear()
+	object_layers.clear()
 	
 	for i in range(max_elevation + 1):
 		var g_layer: TileMapLayer
@@ -63,33 +65,33 @@ func setup_elevation_layers() -> void:
 			g_layer.clear()
 			g_layer.name = "GroundLayer_" + str(i)
 			g_layer.position.y = -(cliff_height * i)
-			g_layer.y_sort_origin = cliff_height * i
 			add_child(g_layer)
 			
 			o_layer = base_object.duplicate()
 			o_layer.clear()
 			o_layer.name = "ObjectLayer_" + str(i)
 			o_layer.position.y = -(cliff_height * i)
-			o_layer.y_sort_origin = cliff_height * i
 			add_child(o_layer)
 		
-		# === Layer dưới đậm màu hơn ===
+		# === Layer dưới đậm màu hơn tạo chiều sâu ===
 		var t: float = float(i) / max_elevation
 		var brightness: float = lerp(0.58, 1.0, t)
 		var mod_color := Color(brightness, brightness * 0.97, brightness * 0.93, 1.0)
 		g_layer.modulate = mod_color
 		o_layer.modulate = mod_color
 		
-		# === Y-sort + Z_index ===
+		# === Kích hoạt Y-Sort tự nhiên phối hợp Z-Index ===
 		g_layer.y_sort_enabled = true
 		o_layer.y_sort_enabled = true
+		g_layer.y_sort_origin = 0
+		o_layer.y_sort_origin = 0
 		
-		#g_layer.z_index = i * 2
-		#o_layer.z_index = i * 2
+		# 🎯 CÔNG THỨC XEN KẼ THIÊN TÀI CỦA ÔNG
+		g_layer.z_index = i
+		o_layer.z_index = i + 1
 		
 		ground_layers.append(g_layer)
 		object_layers.append(o_layer)
-
 
 
 func setup_noises() -> void:
@@ -136,13 +138,11 @@ func handle_world_generation() -> void:
 
 func update_chunks_async(center: Vector2i) -> void:
 	is_generating = true
-	
 	var chunks_needed: Dictionary = {}
 	for x in range(-render_distance, render_distance + 1):
 		for y in range(-render_distance, render_distance + 1):
 			chunks_needed[center + Vector2i(x, y)] = true
 	
-	# === Bước 1: Unload các chunk không còn cần ===
 	var chunks_to_remove: Array = []
 	for loaded_pos in loaded_chunks.keys():
 		if not chunks_needed.has(loaded_pos):
@@ -150,22 +150,17 @@ func update_chunks_async(center: Vector2i) -> void:
 			chunks_to_remove.append(loaded_pos)
 	
 	await get_tree().process_frame
-	
 	for pos in chunks_to_remove:
 		loaded_chunks.erase(pos)
 	
-	# === Bước 2: Load / Render các chunk cần thiết ===
 	for chunk_pos in chunks_needed.keys():
 		if not loaded_chunks.has(chunk_pos):
 			generate_chunk_data_and_render(chunk_pos)
 			await get_tree().process_frame
 	
-	# === Bước 3: Cập nhật lại AStar grid (rất quan trọng) ===
 	if MovementUtils and MovementUtils.has_method("update_grid"):
 		MovementUtils.update_grid(self)
-	
 	is_generating = false
-
 
 
 func generate_chunk_data_and_render(chunk_pos: Vector2i) -> void:
@@ -179,7 +174,6 @@ func generate_chunk_data_and_render(chunk_pos: Vector2i) -> void:
 			var global_y = start_y + y
 			var pos_2d = Vector2i(global_x, global_y)
 			
-			# Chỉ generate data nếu chưa có
 			if not world_data.has(Vector3i(global_x, global_y, 0)):
 				var b_val = biome_noise.get_noise_2d(global_x, global_y)
 				var biome_name = "grass"
@@ -208,10 +202,7 @@ func generate_chunk_data_and_render(chunk_pos: Vector2i) -> void:
 					if z == elevation and has_rock:
 						world_data[voxel_pos]["object"] = auto_rock_source_id
 			
-			# === LUÔN RENDER (dù data đã có hay chưa) ===
 			render_voxel_column(pos_2d)
-
-
 
 
 func render_voxel_column(pos_2d: Vector2i) -> void:
@@ -251,7 +242,7 @@ func has_obstacle(cell: Vector2i, elevation: int) -> bool:
 	var voxel_pos = Vector3i(cell.x, cell.y, elevation)
 	if world_data.has(voxel_pos):
 		return world_data[voxel_pos].has("object") and world_data[voxel_pos]["object"] != -1
-	return true
+	return false
 
 
 # ==========================================================
@@ -314,7 +305,6 @@ func handle_hover_effect() -> void:
 		hover_effect.visible = false
 
 
-# ==================== SAFE SPAWN ====================
 func setup_safe_spawn() -> void:
 	if not player:
 		return
@@ -324,10 +314,8 @@ func setup_safe_spawn() -> void:
 			generate_chunk_data_and_render(Vector2i(cx, cy))
 	
 	current_chunk = Vector2i(0, 0)
-	
 	var spawn_cell := find_safe_spawn_cell()
 	if spawn_cell == Vector2i(-9999, -9999):
-		push_warning("Không tìm được safe spawn, dùng vị trí editor")
 		return
 	
 	var local_pos := base_ground.map_to_local(spawn_cell)
@@ -336,30 +324,21 @@ func setup_safe_spawn() -> void:
 	var elev := get_cell_elevation(spawn_cell)
 	player._last_elev_cell = spawn_cell
 	player.current_elevation = elev
+	player.z_index = elev + 1
 	player.z_shift_y = -float(cliff_height * elev)
 	
 	if player.visual_root:
 		player.visual_root.position = Vector2(0, player.z_shift_y)
-	
-	print("✅ Player spawn an toàn tại: ", spawn_cell, " | elevation: ", elev)
 
 
+# 🎯 ĐÃ ĐƯA HÀM SPAWN VỀ ĐÚNG VỊ TRÍ GỐC KHÔNG BỊ LẠC BLOCK LỖI
 func find_safe_spawn_cell() -> Vector2i:
 	var best_cell: Vector2i = Vector2i(-9999, -9999)
 	var best_score: int = -999999
+	var directions: Array[Vector2i] = [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]
 	
-	var search_min: int = -64
-	var search_max: int = 64
-	
-	var directions: Array[Vector2i] = [
-		Vector2i(1, 0),
-		Vector2i(-1, 0),
-		Vector2i(0, 1),
-		Vector2i(0, -1)
-	]
-	
-	for x in range(search_min, search_max + 1):
-		for y in range(search_min, search_max + 1):
+	for x in range(-64, 65):
+		for y in range(-64, 65):
 			var cell: Vector2i = Vector2i(x, y)
 			var elev: int = get_cell_elevation(cell)
 			if elev == -1 or has_obstacle(cell, elev):
@@ -375,9 +354,7 @@ func find_safe_spawn_cell() -> Vector2i:
 					flat_bonus += 1
 			
 			score += flat_bonus * 25
-			
 			if score > best_score:
 				best_score = score
 				best_cell = cell
-	
 	return best_cell

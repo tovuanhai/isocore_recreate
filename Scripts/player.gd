@@ -20,24 +20,20 @@ var tile_durability: Dictionary = {}
 @export var cliff_height: int = 6
 var current_elevation: int = 0
 
-# 🎯 BIẾN BẢO VỆ PIVOT CHỐNG BAY LƠ LỬNG
 var base_sprite_offset: Vector2 = Vector2.ZERO
 var z_shift_y: float = 0.0
 var elevation_tween: Tween
 
+
 func _ready() -> void:
 	y_sort_enabled = true
-	
-	if sprite:
-		sprite.y_sort_enabled = true
-		sprite.set("y_sort_origin", -48)     # ← Đặt trên Sprite, giá trị lớn
+	z_index = current_elevation + 1
 	
 	if visual_root:
 		visual_root.y_sort_enabled = true
-	
 	if sprite:
+		sprite.y_sort_enabled = true
 		base_sprite_offset = sprite.offset
-
 
 
 func _physics_process(_delta: float) -> void:
@@ -52,13 +48,11 @@ func _physics_process(_delta: float) -> void:
 
 func _process(_delta: float) -> void:
 	if visual_root:
-		# Dịch cả cụm visual theo chiều cao (chính xác hơn offset rất nhiều)
 		visual_root.position = Vector2(0, z_shift_y)
 		
-	
-	# Nếu vẫn muốn giữ offset riêng của sprite (căn art), giữ dòng này:
 	if sprite:
 		sprite.offset = base_sprite_offset
+
 
 func _unhandled_input(event: InputEvent) -> void:
 	var fsm = get_node_or_null("StateMachine")
@@ -100,6 +94,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			var cell_path = MovementUtils.get_path_cells(player_cell, clicked_tile)
 			_set_path_from_cells(cell_path)
 
+
 func _set_path_from_cells(cell_path: Array[Vector2i]) -> void:
 	current_path.clear()
 	var base_layer = tile_map_node.base_ground
@@ -108,11 +103,13 @@ func _set_path_from_cells(cell_path: Array[Vector2i]) -> void:
 		var global_pos = base_layer.to_global(local_pos)
 		current_path.append(global_pos)
 
+
 func get_4_way_dir(angle: float) -> String:
 	if angle >= 0 and angle < 90: return "dr"
 	elif angle >= 90 and angle <= 180: return "dl"
 	elif angle >= -180 and angle < -90: return "ul"
 	else: return "ur"
+
 
 func _update_player_elevation(cell: Vector2i) -> void:
 	var target_elev = tile_map_node.get_cell_elevation(cell)
@@ -131,12 +128,5 @@ func _update_player_elevation(cell: Vector2i) -> void:
 	elevation_tween.tween_property(self, "z_shift_y", target_shift, 0.12) \
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	
-	# === Y-SORT + Z_INDEX (phiên bản ổn định) ===
-	if sprite:
-		sprite.y_sort_enabled = true
-		sprite.set("y_sort_origin", -22)          # Giá trị này khá tốt, bạn có thể chỉnh -18 ~ -26
-	
-	# z_index an toàn nhưng vẫn đủ mạnh
-	var base_layer = tile_map_node.base_ground
-	var player_cell = base_layer.local_to_map(base_layer.to_local(global_position))
-	#z_index = current_elevation * 2 + 1
+	# 🎯 CHÂN LÝ: Đồng bộ Z-Index tịnh tiến chuẩn ý ông để so kè Y-Sort với tầng trên liền kề!
+	z_index = current_elevation + 1
