@@ -45,7 +45,7 @@ func _process(_delta: float) -> void:
 func _draw() -> void:
 	if not player or not tile_map: return
 	
-	var player_cell = tile_map.layer0.local_to_map(tile_map.layer0.to_local(player.global_position))
+	var player_cell = tile_map.base_ground.local_to_map(tile_map.baseground.to_local(player.global_position))
 	var center_offset = size / 2.0
 	
 	# Tính toán số ô gạch nằm vừa khít trong khung UI của ông

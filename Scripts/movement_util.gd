@@ -1,37 +1,65 @@
-class_name MovementUtils
 extends Node
 
-static var astar: AStarGrid2D
+var astar = AStar2D.new()
 
-static func update_grid(layer0: TileMapLayer, layer1: TileMapLayer) -> void:
-	if not astar:
-		astar = AStarGrid2D.new()
-		astar.cell_size = Vector2(16, 8)
-		# SỬA Ở ĐÂY: Cấm tiệt A* đi chéo. Bắt buộc phải đi ziczac theo tâm các viên gạch (Grid X/Y)
-		astar.diagonal_mode = AStarGrid2D.DIAGONAL_MODE_NEVER
+# Giải toán băm tọa độ Vector2i tránh tràn số nguyên cực kỳ bảo mật
+func cell_to_id(cell: Vector2i) -> int:
+	return (cell.x + 10000) + (cell.y + 10000) * 20000
 
-	var rect = layer0.get_used_rect()
-	if rect.size == Vector2i.ZERO: return
-
-	astar.region = rect
-	astar.update()
+func update_grid(tile_map: Node2D) -> void:
+	astar.clear()
 	
-	astar.fill_solid_region(rect, true)
-
-	for cell in layer0.get_used_cells():
-		if layer1.get_cell_source_id(cell) == -1:
-			astar.set_point_solid(cell, false)
-
-static func get_path_to_tile(start: Vector2, target: Vector2i, base_layer: TileMapLayer) -> Array[Vector2]:
-	if not astar or not astar.is_in_bounds(target.x, target.y): return []
-
-	var start_cell = base_layer.local_to_map(base_layer.to_local(start))
-	if not astar.is_in_bounds(start_cell.x, start_cell.y): return []
-
-	var path_cells = astar.get_id_path(start_cell, target)
-	var world_path: Array[Vector2] = []
+	var chunk_size = tile_map.chunk_size
+	var current_chunk = tile_map.current_chunk
+	var r = tile_map.render_distance
 	
-	for cell in path_cells:
-		world_path.append(base_layer.to_global(base_layer.map_to_local(cell)))
+	var start_x = (current_chunk.x - r) * chunk_size
+	var start_y = (current_chunk.y - r) * chunk_size
+	var end_x = (current_chunk.x + r + 1) * chunk_size
+	var end_y = (current_chunk.y + r + 1) * chunk_size
+	
+	var walkable_cells = []
+	
+	# Bước 1: Thêm các nút đất khả dụng vào bảng AStar
+	for x in range(start_x, end_x):
+		for y in range(start_y, end_y):
+			var cell = Vector2i(x, y)
+			var elev = tile_map.get_cell_elevation(cell)
+			
+			if elev != -1 and not tile_map.has_obstacle(cell, elev):
+				var id = cell_to_id(cell)
+				var world_pos = tile_map.base_ground.to_global(tile_map.base_ground.map_to_local(cell))
+				astar.add_point(id, world_pos)
+				walkable_cells.append({"cell": cell, "elev": elev, "id": id})
+	
+	# Bước 2: Chỉ kết nối đường đi nếu dốc cao lệch nhau chuẩn chỉ <= 1 tầng
+	var directions = [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]
+	
+	for data in walkable_cells:
+		for dir in directions:
+			var neighbor_cell = data.cell + dir
+			var neighbor_id = cell_to_id(neighbor_cell)
+			
+			if astar.has_point(neighbor_id):
+				var neighbor_elev = tile_map.get_cell_elevation(neighbor_cell)
+				# 🚨 LUẬT JOHNBRX: Chênh lệch > 1 tầng (vách thẳng đứng) -> CẤM NỐI ĐƯỜNG!
+				if neighbor_elev != -1 and abs(data.elev - neighbor_elev) <= 1:
+					astar.connect_points(data.id, neighbor_id)
+
+func get_path_cells(start_cell: Vector2i, end_cell: Vector2i) -> Array[Vector2i]:
+	var start_id = cell_to_id(start_cell)
+	var end_id = cell_to_id(end_cell)
+	
+	if not astar.has_point(start_id) or not astar.has_point(end_id):
+		return []
 		
-	return world_path
+	var id_path = astar.get_id_path(start_id, end_id)
+	var result_path: Array[Vector2i] = []
+	
+	# Giải mã ngược từ ID băm ra lại Vector2i ô lưới nguyên bản
+	for id in id_path:
+		var y = int(id / 20000) - 10000
+		var x = (id % 20000) - 10000
+		result_path.append(Vector2i(x, y))
+		
+	return result_path

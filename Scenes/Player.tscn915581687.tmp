@@ -185,7 +185,6 @@ _data = {
 
 [node name="Player" type="CharacterBody2D"]
 visibility_layer = 2
-z_index = 1
 motion_mode = 1
 script = ExtResource("1_kyqiw")
 
@@ -205,7 +204,6 @@ region_enabled = true
 region_rect = Rect2(128, 0, 32, 32)
 
 [node name="VisualRoot" type="Node2D" parent="."]
-y_sort_enabled = true
 
 [node name="Sprite2D2" type="Sprite2D" parent="VisualRoot"]
 position = Vector2(-1, -1)

@@ -8,7 +8,6 @@ diffuse_texture = ExtResource("1_tmokt")
 normal_texture = ExtResource("2_b6b3p")
 
 [node name="Node2D" type="StaticBody2D"]
-z_index = 1
 y_sort_enabled = true
 
 [node name="Sprite2D" type="Sprite2D" parent="." groups=["isometric_shadows"]]

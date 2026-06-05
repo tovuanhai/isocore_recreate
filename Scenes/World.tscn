@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=4 uid="uid://cus0a667ydguj"]
+[gd_scene load_steps=5 format=3 uid="uid://cus0a667ydguj"]
 
 [ext_resource type="TileSet" uid="uid://0u8hh8mx7hqj" path="res://Scenes/World.tres" id="1_5cjrv"]
 [ext_resource type="Script" uid="uid://dhqx1aw1r1gr5" path="res://Scripts/tile_map.gd" id="1_p70al"]
@@ -19,7 +19,6 @@ tile_set = ExtResource("1_5cjrv")
 [node name="Layer1" type="TileMapLayer" parent="TileMap"]
 z_index = 1
 y_sort_enabled = true
-tile_map_data = PackedByteArray("AAD9/wEAAgAAAAAAAQAAAPv/BAAAAAAAAQACAPv/AgAAAAAAAQD7//3/AgAAAAAAAQD6/wIAAgAAAAAAAQAAAP//BAAAAAAAAQA=")
 tile_set = ExtResource("1_5cjrv")
 
 [node name="Player" parent="." instance=ExtResource("3_5nsto")]
