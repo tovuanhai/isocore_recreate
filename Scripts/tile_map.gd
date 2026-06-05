@@ -14,6 +14,9 @@ var world_data: Dictionary = {}
 @export var max_elevation: int = 5
 @export var hover_face_height: int = 3
 
+# Hệ số JohnBrx để dịch chuyển mốc phân lớp ảo cho từng tầng gạch
+var z_sort_boost: int = 4
+
 var ground_layers: Array[TileMapLayer] = []
 var object_layers: Array[TileMapLayer] = []
 
@@ -71,16 +74,13 @@ func setup_elevation_layers() -> void:
 			o_layer.name = "ObjectLayer_" + str(i)
 			add_child(o_layer)
 		
-		# 🎯 PHẲNG HÓA TỌA ĐỘ VÀ BÙ TRỪ ORIGIN (KHÔNG CẦN CÔNG THỨC JOHNBRX)
 		var elev_shift = cliff_height * i
 		g_layer.position.y = -elev_shift
 		o_layer.position.y = -elev_shift
 		
-		# Kéo tâm Y-Sort xuống lòng đất để Godot đọ xa gần trên mặt phẳng.
-		# THE MAGIC TRICK: Trừ 8 pixel cho Đất để dời "trọng tâm" của nó lên trên, 
-		# giúp Player đứng ở tâm ô gạch sẽ LUÔN có Y lớn hơn -> Đè lên gạch hoàn hảo!
-		g_layer.y_sort_origin = elev_shift - 8
-		o_layer.y_sort_origin = elev_shift
+		# Áp dụng công thức dịch mốc Y-Sort để các lớp đan cài vào nhau
+		g_layer.y_sort_origin = elev_shift + (i * z_sort_boost) - 1
+		o_layer.y_sort_origin = elev_shift + (i * z_sort_boost)
 		
 		var t: float = float(i) / max_elevation
 		var brightness: float = lerp(0.58, 1.0, t)
@@ -88,7 +88,6 @@ func setup_elevation_layers() -> void:
 		g_layer.modulate = mod_color
 		o_layer.modulate = mod_color
 		
-		# KHÓA CỨNG TOÀN BỘ Z-INDEX VỀ 0
 		g_layer.y_sort_enabled = true
 		o_layer.y_sort_enabled = true
 		g_layer.z_index = 0
@@ -97,16 +96,20 @@ func setup_elevation_layers() -> void:
 		ground_layers.append(g_layer)
 		object_layers.append(o_layer)
 
+
 func setup_noises() -> void:
 	biome_noise = FastNoiseLite.new()
 	biome_noise.seed = randi()
 	biome_noise.frequency = 0.01
+	
 	rock_noise = FastNoiseLite.new()
 	rock_noise.seed = randi() + 1234
 	rock_noise.frequency = 0.08
+	
 	elevation_noise = FastNoiseLite.new()
 	elevation_noise.seed = randi() + 777
 	elevation_noise.frequency = 0.015
+
 
 func auto_detect_rock_ids() -> void:
 	var tileset = base_object.tile_set
@@ -119,9 +122,11 @@ func auto_detect_rock_ids() -> void:
 			auto_rock_alternative_id = source.get_scene_tile_id(0)
 			return
 
+
 func _process(_delta: float) -> void:
 	handle_world_generation()
 	handle_hover_effect()
+
 
 func handle_world_generation() -> void:
 	if not player or is_generating: return
@@ -131,44 +136,54 @@ func handle_world_generation() -> void:
 		current_chunk = player_chunk
 		update_chunks_async(current_chunk)
 
+
 func update_chunks_async(center: Vector2i) -> void:
 	is_generating = true
 	var chunks_needed: Dictionary = {}
 	for x in range(-render_distance, render_distance + 1):
 		for y in range(-render_distance, render_distance + 1):
 			chunks_needed[center + Vector2i(x, y)] = true
+	
 	var chunks_to_remove: Array = []
 	for loaded_pos in loaded_chunks.keys():
 		if not chunks_needed.has(loaded_pos):
 			unload_chunk_visuals(loaded_pos)
 			chunks_to_remove.append(loaded_pos)
+	
 	await get_tree().process_frame
 	for pos in chunks_to_remove: loaded_chunks.erase(pos)
+	
 	for chunk_pos in chunks_needed.keys():
 		if not loaded_chunks.has(chunk_pos):
 			generate_chunk_data_and_render(chunk_pos)
 			await get_tree().process_frame
+	
 	if MovementUtils and MovementUtils.has_method("update_grid"):
 		MovementUtils.update_grid(self)
 	is_generating = false
+
 
 func generate_chunk_data_and_render(chunk_pos: Vector2i) -> void:
 	loaded_chunks[chunk_pos] = true
 	var start_x = chunk_pos.x * chunk_size
 	var start_y = chunk_pos.y * chunk_size
+	
 	for x in range(chunk_size):
 		for y in range(chunk_size):
 			var global_x = start_x + x
 			var global_y = start_y + y
 			var pos_2d = Vector2i(global_x, global_y)
+			
 			if not world_data.has(Vector3i(global_x, global_y, 0)):
 				var b_val = biome_noise.get_noise_2d(global_x, global_y)
 				var biome_name = "grass"
 				if b_val < -0.15: biome_name = "sand"
 				elif b_val < 0.15: biome_name = "dirt"
+				
 				var e_val = elevation_noise.get_noise_2d(global_x, global_y)
 				var normalized_e = (e_val + 1.0) / 2.0
 				var elevation = clampi(int(normalized_e * (max_elevation + 1)), 0, max_elevation)
+				
 				var has_rock = false
 				if auto_rock_source_id != -1:
 					var r_noise_val = rock_noise.get_noise_2d(global_x, global_y)
@@ -177,12 +192,15 @@ func generate_chunk_data_and_render(chunk_pos: Vector2i) -> void:
 						var edge_dot = (global_x * 45.13) + (global_y * 91.27) + rock_noise.seed
 						var edge_rand = abs(sin(edge_dot) * 43758.5453) - floor(abs(sin(edge_dot) * 43758.5453))
 						if edge_rand < 0.85: has_rock = true
+				
 				for z in range(elevation + 1):
 					var voxel_pos = Vector3i(global_x, global_y, z)
 					world_data[voxel_pos] = {"type": "ground", "biome": biome_name}
 					if z == elevation and has_rock:
 						world_data[voxel_pos]["object"] = auto_rock_source_id
+			
 			render_voxel_column(pos_2d)
+
 
 func render_voxel_column(pos_2d: Vector2i) -> void:
 	for z in range(max_elevation + 1):
@@ -197,6 +215,7 @@ func render_voxel_column(pos_2d: Vector2i) -> void:
 			if data.has("object") and data["object"] != -1:
 				object_layers[z].set_cell(pos_2d, data["object"], Vector2i(0, 0), auto_rock_alternative_id)
 
+
 func unload_chunk_visuals(chunk_pos: Vector2i) -> void:
 	var start_x = chunk_pos.x * chunk_size
 	var start_y = chunk_pos.y * chunk_size
@@ -207,10 +226,12 @@ func unload_chunk_visuals(chunk_pos: Vector2i) -> void:
 				ground_layers[h].set_cell(cell, -1)
 				object_layers[h].set_cell(cell, -1)
 
+
 func get_cell_elevation(cell: Vector2i) -> int:
 	for z in range(max_elevation, -1, -1):
 		if world_data.has(Vector3i(cell.x, cell.y, z)): return z
 	return -1
+
 
 func has_obstacle(cell: Vector2i, elevation: int) -> bool:
 	var voxel_pos = Vector3i(cell.x, cell.y, elevation)
@@ -218,9 +239,7 @@ func has_obstacle(cell: Vector2i, elevation: int) -> bool:
 		return world_data[voxel_pos].has("object") and world_data[voxel_pos]["object"] != -1
 	return false
 
-# ==========================================================
-# 🖱️ HOVER + SAFE SPAWN
-# ==========================================================
+
 func setup_hover_polygon() -> void:
 	hover_effect = Polygon2D.new()
 	hover_effect.polygon = PackedVector2Array([Vector2(0, -4), Vector2(8, 0), Vector2(0, 4), Vector2(-8, 0)])
@@ -228,6 +247,7 @@ func setup_hover_polygon() -> void:
 	hover_effect.top_level = true
 	hover_effect.z_index = 100
 	add_child(hover_effect)
+
 
 func get_hovered_tile() -> Vector2i:
 	var mouse_pos = get_global_mouse_position()
@@ -259,6 +279,7 @@ func get_hovered_tile() -> Vector2i:
 						best_cell = cell
 	return best_cell
 
+
 func handle_hover_effect() -> void:
 	var cell = get_hovered_tile()
 	if cell != Vector2i(-9999, -9999):
@@ -269,6 +290,7 @@ func handle_hover_effect() -> void:
 		else: hover_effect.color = Color(1, 1, 1, 0.4)
 	else:
 		hover_effect.visible = false
+
 
 func setup_safe_spawn() -> void:
 	if not player: return
@@ -286,9 +308,7 @@ func setup_safe_spawn() -> void:
 	var elev := get_cell_elevation(spawn_cell)
 	player._last_elev_cell = spawn_cell
 	player.current_elevation = elev
-	player.z_shift_y = -float(cliff_height * elev)
-	if player.visual_root:
-		player.visual_root.position.y = player.z_shift_y
+
 
 func find_safe_spawn_cell() -> Vector2i:
 	var best_cell: Vector2i = Vector2i(-9999, -9999)

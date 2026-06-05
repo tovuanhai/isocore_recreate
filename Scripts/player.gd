@@ -19,26 +19,32 @@ var tile_durability: Dictionary = {}
 
 @export var cliff_height: int = 6
 var current_elevation: int = 0
-var z_shift_y: float = 0.0
+
+var elevation_float: float = 0.0
 var elevation_tween: Tween
+
+@export var sprite_fix_x: float = 0.0
+@export var sprite_fix_y: float = 0.0
 
 
 func _ready() -> void:
-	# 🔒 TRẢ LẠI QUYỀN LỰC CHO Y-SORT GỐC CỦA GODOT
+	# 🔒 KÍCH HOẠT CHẾ ĐỘ PHẲNG TUYỆT ĐỐI CHO PLAYER
 	z_index = 0
 	y_sort_enabled = true
 	
-	# Khóa Y-Sort của các node con để tránh tự cắt xén hình ảnh
 	if visual_root:
-		visual_root.z_index = 0
 		visual_root.y_sort_enabled = false
+		visual_root.position = Vector2.ZERO
 	if sprite:
-		sprite.z_index = 0
 		sprite.y_sort_enabled = false
 
-	# Nhập hộ khẩu Player vào TileMap để đọ xa gần với từng viên gạch
+	# Đăng ký hộ khẩu tầng gốc ban đầu
 	if tile_map_node:
-		call_deferred("reparent", tile_map_node)
+		call_deferred("reparent", tile_map_node.base_object)
+		
+	self.modulate = Color.WHITE
+	# Dành cho CanvasItem (Node2D), thuộc tính này giúp node không bị ảnh hưởng bởi Modulate của cha
+	self.set_meta("original_modulate", true) # (Đánh dấu meta nếu cần thiết)
 
 
 func _physics_process(_delta: float) -> void:
@@ -52,10 +58,20 @@ func _physics_process(_delta: float) -> void:
 
 
 func _process(_delta: float) -> void:
-	# 🎯 BẢO VỆ ANIMATION: Chỉ dịch chuyển Node tổng VisualRoot để tạo độ cao.
-	# Tuyệt đối không can thiệp vào Sprite, để AnimationPlayer của ông tự do hoạt động!
+	var n_factor = 4.0 # Đồng bộ chuẩn chỉ với z_sort_boost của TileMap
+	var c_height = float(cliff_height)
+	
+	# Tính toán lát cắt vị trí ảo theo công thức JohnBrx
+	var current_boost = elevation_float * n_factor
+	var current_shift = -(elevation_float * c_height)
+	
+	# Dịch chuyển visual_root nội bộ mà không bật top_level để triệt tiêu 100% lỗi giật lag camera!
 	if visual_root:
-		visual_root.position.y = z_shift_y
+		visual_root.position = Vector2(0, current_boost)
+		
+	if sprite:
+		# Giữ nguyên Sprite position để tránh xung đột AnimationPlayer
+		sprite.position = Vector2(sprite_fix_x, current_shift - current_boost + sprite_fix_y)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -121,12 +137,16 @@ func _update_player_elevation(cell: Vector2i) -> void:
 		return
 	
 	current_elevation = target_elev
-	var ch = tile_map_node.cliff_height if tile_map_node else cliff_height
-	var target_shift = float(- (ch * current_elevation))
 	
 	if elevation_tween and elevation_tween.is_valid():
 		elevation_tween.kill()
 	
 	elevation_tween = get_tree().create_tween()
-	elevation_tween.tween_property(self, "z_shift_y", target_shift, 0.15) \
+	elevation_tween.tween_property(self, "elevation_float", float(current_elevation), 0.15) \
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+		
+	# 🎯 BÍ THUẬT NHẬP CƯ LUÂN PHIÊN CHUẨN ISO:
+	# Đổi tầng đến đâu, ném thẳng Player làm con của Layer tương ứng đến đó để Godot tự xử lý Draw Call!
+	if tile_map_node and target_elev < tile_map_node.object_layers.size():
+		var target_layer = tile_map_node.object_layers[target_elev]
+		reparent.call_deferred(target_layer)
