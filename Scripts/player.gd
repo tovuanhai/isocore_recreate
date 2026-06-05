@@ -23,12 +23,13 @@ var current_elevation: int = 0
 var elevation_float: float = 0.0
 var elevation_tween: Tween
 
+var base_sprite_offset: Vector2 = Vector2.ZERO
 @export var sprite_fix_x: float = 0.0
 @export var sprite_fix_y: float = 0.0
 
 
 func _ready() -> void:
-	# 🔒 KÍCH HOẠT CHẾ ĐỘ PHẲNG TUYỆT ĐỐI CHO PLAYER
+	# Khóa cấu trúc Y-Sort sòng phẳng phẳng hóa
 	z_index = 0
 	y_sort_enabled = true
 	
@@ -37,14 +38,10 @@ func _ready() -> void:
 		visual_root.position = Vector2.ZERO
 	if sprite:
 		sprite.y_sort_enabled = false
-
-	# Đăng ký hộ khẩu tầng gốc ban đầu
-	if tile_map_node:
-		call_deferred("reparent", tile_map_node.base_object)
+		base_sprite_offset = sprite.offset
 		
+	# Đảm bảo màu nguyên bản luôn là trắng tinh khôi không dính toán học rác
 	self.modulate = Color.WHITE
-	# Dành cho CanvasItem (Node2D), thuộc tính này giúp node không bị ảnh hưởng bởi Modulate của cha
-	self.set_meta("original_modulate", true) # (Đánh dấu meta nếu cần thiết)
 
 
 func _physics_process(_delta: float) -> void:
@@ -61,16 +58,15 @@ func _process(_delta: float) -> void:
 	var n_factor = 4.0 # Đồng bộ chuẩn chỉ với z_sort_boost của TileMap
 	var c_height = float(cliff_height)
 	
-	# Tính toán lát cắt vị trí ảo theo công thức JohnBrx
 	var current_boost = elevation_float * n_factor
 	var current_shift = -(elevation_float * c_height)
 	
-	# Dịch chuyển visual_root nội bộ mà không bật top_level để triệt tiêu 100% lỗi giật lag camera!
+	# Lún trục ảo đồ họa để lừa Z-buffer đan xen Isometric
 	if visual_root:
 		visual_root.position = Vector2(0, current_boost)
 		
 	if sprite:
-		# Giữ nguyên Sprite position để tránh xung đột AnimationPlayer
+		# Giữ nguyên Sprite position để giải phóng 100% cho AnimationPlayer quẩy
 		sprite.position = Vector2(sprite_fix_x, current_shift - current_boost + sprite_fix_y)
 
 
@@ -145,8 +141,7 @@ func _update_player_elevation(cell: Vector2i) -> void:
 	elevation_tween.tween_property(self, "elevation_float", float(current_elevation), 0.15) \
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 		
-	# 🎯 BÍ THUẬT NHẬP CƯ LUÂN PHIÊN CHUẨN ISO:
-	# Đổi tầng đến đâu, ném thẳng Player làm con của Layer tương ứng đến đó để Godot tự xử lý Draw Call!
+	# BẬT DI TRÚ LUÂN PHIÊN AN TOÀN
 	if tile_map_node and target_elev < tile_map_node.object_layers.size():
 		var target_layer = tile_map_node.object_layers[target_elev]
 		reparent.call_deferred(target_layer)

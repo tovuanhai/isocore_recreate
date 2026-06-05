@@ -85,8 +85,10 @@ func setup_elevation_layers() -> void:
 		var t: float = float(i) / max_elevation
 		var brightness: float = lerp(0.58, 1.0, t)
 		var mod_color := Color(brightness, brightness * 0.97, brightness * 0.93, 1.0)
-		g_layer.modulate = mod_color
-		o_layer.modulate = mod_color
+		
+		# 🎯 TẢO THANH NHIỄM MÀU: Dùng self_modulate để chỉ nhuộm màu gạch, không nhuộm Player!
+		g_layer.self_modulate = mod_color
+		o_layer.self_modulate = mod_color
 		
 		g_layer.y_sort_enabled = true
 		o_layer.y_sort_enabled = true
@@ -143,21 +145,17 @@ func update_chunks_async(center: Vector2i) -> void:
 	for x in range(-render_distance, render_distance + 1):
 		for y in range(-render_distance, render_distance + 1):
 			chunks_needed[center + Vector2i(x, y)] = true
-	
 	var chunks_to_remove: Array = []
 	for loaded_pos in loaded_chunks.keys():
 		if not chunks_needed.has(loaded_pos):
 			unload_chunk_visuals(loaded_pos)
 			chunks_to_remove.append(loaded_pos)
-	
 	await get_tree().process_frame
 	for pos in chunks_to_remove: loaded_chunks.erase(pos)
-	
 	for chunk_pos in chunks_needed.keys():
 		if not loaded_chunks.has(chunk_pos):
 			generate_chunk_data_and_render(chunk_pos)
 			await get_tree().process_frame
-	
 	if MovementUtils and MovementUtils.has_method("update_grid"):
 		MovementUtils.update_grid(self)
 	is_generating = false
@@ -167,23 +165,19 @@ func generate_chunk_data_and_render(chunk_pos: Vector2i) -> void:
 	loaded_chunks[chunk_pos] = true
 	var start_x = chunk_pos.x * chunk_size
 	var start_y = chunk_pos.y * chunk_size
-	
 	for x in range(chunk_size):
 		for y in range(chunk_size):
 			var global_x = start_x + x
 			var global_y = start_y + y
 			var pos_2d = Vector2i(global_x, global_y)
-			
 			if not world_data.has(Vector3i(global_x, global_y, 0)):
 				var b_val = biome_noise.get_noise_2d(global_x, global_y)
 				var biome_name = "grass"
 				if b_val < -0.15: biome_name = "sand"
 				elif b_val < 0.15: biome_name = "dirt"
-				
 				var e_val = elevation_noise.get_noise_2d(global_x, global_y)
 				var normalized_e = (e_val + 1.0) / 2.0
 				var elevation = clampi(int(normalized_e * (max_elevation + 1)), 0, max_elevation)
-				
 				var has_rock = false
 				if auto_rock_source_id != -1:
 					var r_noise_val = rock_noise.get_noise_2d(global_x, global_y)
@@ -192,13 +186,11 @@ func generate_chunk_data_and_render(chunk_pos: Vector2i) -> void:
 						var edge_dot = (global_x * 45.13) + (global_y * 91.27) + rock_noise.seed
 						var edge_rand = abs(sin(edge_dot) * 43758.5453) - floor(abs(sin(edge_dot) * 43758.5453))
 						if edge_rand < 0.85: has_rock = true
-				
 				for z in range(elevation + 1):
 					var voxel_pos = Vector3i(global_x, global_y, z)
 					world_data[voxel_pos] = {"type": "ground", "biome": biome_name}
 					if z == elevation and has_rock:
 						world_data[voxel_pos]["object"] = auto_rock_source_id
-			
 			render_voxel_column(pos_2d)
 
 
@@ -308,6 +300,10 @@ func setup_safe_spawn() -> void:
 	var elev := get_cell_elevation(spawn_cell)
 	player._last_elev_cell = spawn_cell
 	player.current_elevation = elev
+	
+	# Đăng ký hộ khẩu tầng xuất phát đầu game chuẩn chỉ
+	if elev < object_layers.size():
+		player.call_deferred("reparent", object_layers[elev])
 
 
 func find_safe_spawn_cell() -> Vector2i:
@@ -321,9 +317,9 @@ func find_safe_spawn_cell() -> Vector2i:
 			if elev == -1 or has_obstacle(cell, elev): continue
 			var score: int = (max_elevation - elev) * 120
 			var flat_bonus: int = 0
-			for dir: Vector2i in directions:
-				var nc: Vector2i = cell + dir
-				var ne: int = get_cell_elevation(nc)
+			for dir in directions:
+				var nc = cell + dir
+				var ne = get_cell_elevation(nc)
 				if ne != -1 and not has_obstacle(nc, ne) and abs(ne - elev) <= 1:
 					flat_bonus += 1
 			score += flat_bonus * 25

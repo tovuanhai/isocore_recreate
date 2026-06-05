@@ -193,7 +193,6 @@ rotation = 1.5708
 shape = SubResource("CircleShape2D_kyqiw")
 
 [node name="VisualRoot" type="Node2D" parent="."]
-top_level = true
 y_sort_enabled = true
 
 [node name="Sprite2D" type="Sprite2D" parent="VisualRoot"]
