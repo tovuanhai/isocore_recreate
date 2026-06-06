@@ -3,80 +3,65 @@ extends ColorRect
 @onready var tile_map: Node2D = $"/root/Root/TileMap"
 @onready var player: CharacterBody2D = $"/root/Root/Player"
 
-@export var map_scale: float = 2.0 # Giữ nguyên scale mượt hôm trước ông chỉnh
+# Cấu hình minimap
+@export var map_scale: float = 3.0 
+@export var vision_radius: int = 8 # Bán kính khám phá xung quanh người chơi
 
-# ==========================================================
-# 🌫️ HỆ THỐNG SƯƠNG MÙ BẢN ĐỒ (FOG OF WAR)
-# ==========================================================
-var discovered_cells: Dictionary = {} # Nơi lưu những ô gạch Player đã mở khóa
-@export var vision_radius: int = 7    # Bán kính soi sáng của Player (ví dụ: tầm nhìn đuốc là 7 ô)
-
-var tile_colors = {
-	"grass": Color("#d1a66e"),  # Màu cỏ úa
-	"sand":  Color("#a9c1ce"),  # Màu cát xám
-	"dirt":  Color("#7b473c"),  # Màu đất nâu đỏ
-	"stone": Color("#cc1111"),  # Màu đỏ vật cản
-	"unknown": Color(0, 0, 0, 0)
+# Bảng màu (Thay đổi mã màu theo ý thích của bạn)
+var biome_colors = {
+	"grass": Color("#e39c2f"),
+	"sand":  Color("#ceedef"),
+	"dirt":  Color("#634832")
 }
 
-func _ready() -> void:
-	# Ép nền ColorRect thành màu đen đặc bí ẩn của Core Keeper
-	color = Color("#0c0c0c") 
-	queue_redraw()
+# Lưu trữ các ô đã đi qua
+var discovered_cells: Dictionary = {}
 
 func _process(_delta: float) -> void:
 	if not player or not tile_map: return
 	
-	# 1. THUẬT TOÁN MỞ KHÓA SƯƠNG MÙ
-	var player_cell = tile_map.layer0.local_to_map(tile_map.layer0.to_local(player.global_position))
-	
-	# Quét một vùng hình vuông (hoặc tròn) xung quanh chân con mèo để kích hoạt "đã khám phá"
-	for x in range(-vision_radius, vision_radius + 1):
-		for y in range(-vision_radius, vision_radius + 1):
-			var target_cell = player_cell + Vector2i(x, y)
+	# Mở khóa các ô xung quanh player
+	var player_pos = tile_map.base_ground.local_to_map(tile_map.base_ground.to_local(player.global_position))
+	for x in range(-vision_radius, vision_radius):
+		for y in range(-vision_radius, vision_radius):
+			var cell = player_pos + Vector2i(x, y)
+			discovered_cells[cell] = true
 			
-			# Nếu ô này chưa có trong danh sách đã đi qua -> Ghi nhớ lại ngay!
-			if not discovered_cells.has(target_cell):
-				discovered_cells[target_cell] = true
-				
-	# 2. CẬP NHẬT VẼ LẠI UI LÊN MÀN HÌNH
+	# Yêu cầu vẽ lại mỗi khung hình
 	queue_redraw()
 
 func _draw() -> void:
 	if not player or not tile_map: return
 	
-	var player_cell = tile_map.base_ground.local_to_map(tile_map.baseground.to_local(player.global_position))
-	var center_offset = size / 2.0
+	var center = size / 2.0
+	var player_cell = tile_map.base_ground.local_to_map(tile_map.base_ground.to_local(player.global_position))
 	
-	# Tính toán số ô gạch nằm vừa khít trong khung UI của ông
-	var max_cells_x = int((size.x / map_scale) / 2) + 1
-	var max_cells_y = int((size.y / map_scale) / 2) + 1
+	# 1. Vẽ lớp nền đen (Sương mù)
+	draw_rect(Rect2(Vector2.ZERO, size), Color("#1a1a1a")) 
 	
-	for x in range(-max_cells_x, max_cells_x):
-		for y in range(-max_cells_y, max_cells_y):
-			var current_cell = player_cell + Vector2i(x, y)
+	# 2. Vẽ các ô đã khám phá
+	# Quét một vùng hiển thị lớn hơn một chút so với bán kính nhìn
+	for x in range(-20, 20):
+		for y in range(-20, 20):
+			var cell = player_cell + Vector2i(x, y)
 			
-			# KHÓA CHÍ CHÚ: Chỉ vẽ ô gạch lên Minimap nếu ô đó NẰM TRONG vùng đã khám phá!
-			if discovered_cells.has(current_cell):
-				var color_to_draw = get_tile_color_at(current_cell)
-				if color_to_draw.a == 0: continue
+			# Chỉ vẽ nếu đã khám phá và ô đó tồn tại trong map
+			if discovered_cells.has(cell) and tile_map.world_data.has(cell):
+				var data = tile_map.world_data[cell]
+				var elev = data["z"]
 				
-				var pixel_pos = center_offset + Vector2(x, y) * map_scale
-				draw_rect(Rect2(pixel_pos, Vector2(map_scale, map_scale)), color_to_draw)
-			# Nếu chưa đi qua -> Bỏ trống hoàn toàn để lộ ra cái nền đen đặc của ColorRect
-
-func get_tile_color_at(cell: Vector2i) -> Color:
-	if tile_map.layer1.get_cell_source_id(cell) != -1:
-		return tile_colors["stone"]
-		
-	var source_id = tile_map.layer0.get_cell_source_id(cell)
-	if source_id == -1:
-		return tile_colors["unknown"]
-		
-	var atlas_coords = tile_map.layer0.get_cell_atlas_coords(cell)
+				# Lấy màu gốc và điều chỉnh độ sáng theo độ cao
+				var base_color = biome_colors.get(data["biome"], Color(0.2, 0.2, 0.2))
+				var brightness = 0.5 + (float(elev) / float(tile_map.max_elevation)) * 0.5
+				var final_color = base_color
+				final_color.v *= brightness
+				
+				# Tính vị trí vẽ
+				var draw_pos = center + Vector2(x, y) * map_scale
+				var rect_size = Vector2(map_scale, map_scale)
+				
+				# Vẽ ô
+				draw_rect(Rect2(draw_pos - rect_size/2, rect_size), final_color)
 	
-	for biome_name in tile_map.biomes.keys():
-		if atlas_coords in tile_map.biomes[biome_name]:
-			return tile_colors[biome_name]
-			
-	return tile_colors["unknown"]
+	# 3. Vẽ chấm đại diện cho Player (Luôn hiện)
+	draw_circle(center, 4.0, Color.YELLOW)

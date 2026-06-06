@@ -1,51 +1,50 @@
-[gd_scene load_steps=4 format=3 uid="uid://dm2gsuvv6qynt"]
+[gd_scene load_steps=8 format=3 uid="uid://dm2gsuvv6qynt"]
 
+[ext_resource type="FontFile" uid="uid://mkvknh57gn2b" path="res://Assets/UI/Fonts/DFVN Pexel Grotesk.otf" id="1_48q88"]
 [ext_resource type="Script" uid="uid://btobmcagan3m3" path="res://Scripts/canvas_layer.gd" id="1_nxvpl"]
 [ext_resource type="Texture2D" uid="uid://j7bga73sx0qt" path="res://Assets/UI/Micro Icon Pack/Sprite Sheet (10x10).png" id="2_dewlx"]
+[ext_resource type="Script" uid="uid://b5p60wrlkrqb3" path="res://Scripts/minimap.gd" id="2_hfhsn"]
+[ext_resource type="Texture2D" uid="uid://dn0clldiwpytt" path="res://Assets/UI/minimap_frame_background.png" id="2_nxvpl"]
+[ext_resource type="Texture2D" uid="uid://c63xm1a1lndo7" path="res://Assets/UI/minimap_frame.png" id="4_hfhsn"]
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_dewlx"]
-atlas = ExtResource("2_dewlx")
-region = Rect2(0, 60, 12, 12)
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_dewlx"]
+texture = ExtResource("2_nxvpl")
 
 [node name="CanvasLayer" type="CanvasLayer"]
 
 [node name="FPSCounter" type="Label" parent="."]
 offset_right = 40.0
 offset_bottom = 23.0
-theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("1_48q88")
 script = ExtResource("1_nxvpl")
 
-[node name="MarginContainer" type="MarginContainer" parent="."]
-clip_contents = true
-custom_minimum_size = Vector2(250, 200)
-anchors_preset = 1
+[node name="PanelContainer" type="PanelContainer" parent="."]
+clip_children = 1
+anchors_preset = 3
 anchor_left = 1.0
+anchor_top = 1.0
 anchor_right = 1.0
-offset_left = -270.0
-offset_bottom = 220.0
+anchor_bottom = 1.0
+offset_left = -297.0
+offset_top = -298.0
+offset_right = -201.0
+offset_bottom = -202.0
 grow_horizontal = 0
-theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 10
+grow_vertical = 0
+scale = Vector2(3, 3)
+theme_override_styles/panel = SubResource("StyleBoxTexture_dewlx")
 
-[node name="Minimap" type="ColorRect" parent="MarginContainer"]
-clip_contents = true
-custom_minimum_size = Vector2(250, 200)
+[node name="Minimap" type="ColorRect" parent="PanelContainer"]
 layout_mode = 2
-color = Color(0.101961, 0.101961, 0.101961, 0.501961)
+script = ExtResource("2_hfhsn")
 
-[node name="PlayerIcon" type="TextureRect" parent="MarginContainer/Minimap"]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -6.0
-offset_top = -6.0
-offset_right = 6.0
-offset_bottom = 6.0
-grow_horizontal = 2
-grow_vertical = 2
-texture = SubResource("AtlasTexture_dewlx")
+[node name="PlayerIcon" type="Sprite2D" parent="PanelContainer/Minimap"]
+position = Vector2(48, 48)
+texture = ExtResource("2_dewlx")
+region_enabled = true
+region_rect = Rect2(0, 60, 12, 12)
+
+[node name="Outline" type="TextureRect" parent="PanelContainer"]
+layout_mode = 2
+texture = ExtResource("4_hfhsn")
