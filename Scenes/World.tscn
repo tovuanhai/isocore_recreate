@@ -1,13 +1,22 @@
-[gd_scene load_steps=6 format=3 uid="uid://cus0a667ydguj"]
+[gd_scene load_steps=8 format=3 uid="uid://cus0a667ydguj"]
 
-[ext_resource type="TileSet" uid="uid://0u8hh8mx7hqj" path="res://Scenes/World.tres" id="1_5cjrv"]
+[ext_resource type="TileSet" uid="uid://0u8hh8mx7hqj" path="res://Resources/World.tres" id="1_5cjrv"]
+[ext_resource type="Shader" uid="uid://dvbkjiu3nk33s" path="res://Resources/line_separator.gdshader" id="1_45d1s"]
 [ext_resource type="Script" uid="uid://dhqx1aw1r1gr5" path="res://Scripts/tile_map.gd" id="1_p70al"]
 [ext_resource type="PackedScene" uid="uid://dw82ffshcw0we" path="res://Scenes/Player.tscn" id="3_5nsto"]
 [ext_resource type="PackedScene" uid="uid://dm2gsuvv6qynt" path="res://Scenes/UI.tscn" id="4_gjpho"]
 [ext_resource type="Script" uid="uid://cccbvw43wgbe8" path="res://Scripts/dynamic_camera.gd" id="5_p70al"]
 
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_y7y61"]
+shader = ExtResource("1_45d1s")
+shader_parameter/line_color = Color(0.05, 0.2, 0.05, 1)
+shader_parameter/line_thickness = 1.0
+
 [node name="Root" type="Node2D"]
 y_sort_enabled = true
+
+[node name="CanvasGroup" type="CanvasGroup" parent="."]
+material = SubResource("ShaderMaterial_y7y61")
 
 [node name="TileMap" type="Node2D" parent="."]
 y_sort_enabled = true
@@ -18,7 +27,6 @@ y_sort_enabled = true
 tile_set = ExtResource("1_5cjrv")
 
 [node name="Layer1" type="TileMapLayer" parent="TileMap"]
-z_index = 1
 y_sort_enabled = true
 tile_set = ExtResource("1_5cjrv")
 
@@ -27,9 +35,14 @@ position = Vector2(-16, -7)
 
 [node name="CanvasLayer" parent="." instance=ExtResource("4_gjpho")]
 
+[node name="Minimap" parent="CanvasLayer/PanelContainer" index="0" node_paths=PackedStringArray("tile_map", "player")]
+tile_map = NodePath("../../../TileMap")
+player = NodePath("../../../Player")
+
 [node name="Camera2D" type="Camera2D" parent="." node_paths=PackedStringArray("player")]
 zoom = Vector2(5, 5)
 script = ExtResource("5_p70al")
 player = NodePath("../Player")
-dead_zone_radius = 30.0
 follow_speed = 5.0
+
+[editable path="CanvasLayer"]

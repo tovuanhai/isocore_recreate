@@ -1,8 +1,7 @@
-[gd_resource type="TileSet" load_steps=7 format=3 uid="uid://0u8hh8mx7hqj"]
+[gd_resource type="TileSet" load_steps=5 format=3 uid="uid://0u8hh8mx7hqj"]
 
 [ext_resource type="Texture2D" uid="uid://coww5lumogws8" path="res://Assets/Tileset/Pixel Isometric 16x16/Tiles.png" id="1_msdf4"]
-[ext_resource type="PackedScene" uid="uid://dots4a31oqmyy" path="res://Scenes/rock1.tscn" id="3_06jps"]
-[ext_resource type="PackedScene" uid="uid://dd0i0e3cixtdh" path="res://Scenes/LightBulb.tscn" id="4_v26xk"]
+[ext_resource type="Texture2D" uid="uid://bctol524qxyxt" path="res://Assets/Tileset/Pixel Isometric 16x16/Tiles-outline.png" id="2_mc07o"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_msdf4"]
 resource_name = "Ground"
@@ -228,18 +227,28 @@ texture = ExtResource("1_msdf4")
 0:9/0/texture_origin = Vector2i(0, -3)
 0:9/0/z_index = 1
 
-[sub_resource type="TileSetScenesCollectionSource" id="TileSetScenesCollectionSource_v26xk"]
-resource_name = "Rock1"
-scenes/1/scene = ExtResource("3_06jps")
-
-[sub_resource type="TileSetScenesCollectionSource" id="TileSetScenesCollectionSource_ubswg"]
-resource_name = "LightBulb"
-scenes/1/scene = ExtResource("4_v26xk")
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_r22qv"]
+resource_name = "Outline"
+texture = ExtResource("2_mc07o")
+0:0/0 = 0
+0:0/0/texture_origin = Vector2i(0, -3)
+1:0/0 = 0
+1:0/0/texture_origin = Vector2i(0, -3)
+2:0/0 = 0
+2:0/0/texture_origin = Vector2i(0, -3)
+3:0/0 = 0
+3:0/0/texture_origin = Vector2i(0, -3)
+0:1/0 = 0
+0:1/0/texture_origin = Vector2i(0, -3)
+1:1/0 = 0
+1:1/0/texture_origin = Vector2i(0, -3)
+2:1/0 = 0
+2:1/0/texture_origin = Vector2i(0, -3)
 
 [resource]
 tile_shape = 1
+tile_layout = 4
 tile_offset_axis = 1
 tile_size = Vector2i(16, 8)
 sources/0 = SubResource("TileSetAtlasSource_msdf4")
-sources/4 = SubResource("TileSetScenesCollectionSource_ubswg")
-sources/2 = SubResource("TileSetScenesCollectionSource_v26xk")
+sources/1 = SubResource("TileSetAtlasSource_r22qv")

@@ -13,7 +13,6 @@ func _ready() -> void:
 		if child.has_method("enter") and child.has_method("exit"):
 			states[child.name.to_lower()] = child
 			child.transition_requested.connect(_on_transition_requested)
-			print("Đã kết nạp trạng thái: ", child.name) # Tí xem ở bảng Output
 			
 	# BƯỚC 2: Tự động gắp Node Idle làm trạng thái mặc định nếu ông quên kéo thả
 	if initial_state == null:
@@ -23,7 +22,6 @@ func _ready() -> void:
 	if initial_state:
 		initial_state.enter()
 		current_state = initial_state
-		print("Máy trạng thái đã chạy! Bắt đầu với: ", current_state.name)
 
 func _process(delta: float) -> void:
 	if current_state:

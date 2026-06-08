@@ -25,6 +25,8 @@ var elevation_tween: Tween
 @export var sprite_fix_x: float = 0.0
 @export var sprite_fix_y: float = 0.0
 
+@onready var col_shape: CollisionShape2D = get_node_or_null("CollisionShape2D")
+
 func _ready() -> void:
 	z_index = 0
 	y_sort_enabled = true # Y-Sort gốc của Godot
@@ -50,12 +52,26 @@ func _physics_process(_delta: float) -> void:
 		_last_elev_cell = player_cell
 		_update_player_elevation(player_cell)
 
+#func _process(_delta: float) -> void:
+	## 🎯 CHÂN LÝ Ở ĐÂY: KHÔNG HACK Z-INDEX, KHÔNG HACK Y-SORT ORIGIN NỮA!
+	## Cả cơ thể Mèo ở Y=0 phẳng. Ta chỉ KÉO MỖI BỨC ẢNH BAY LÊN TRỜI.
+	#var c_height = float(cliff_height)
+	#if sprite:
+		#sprite.position = Vector2(sprite_fix_x, -(elevation_float * c_height) + sprite_fix_y)
 func _process(_delta: float) -> void:
 	# 🎯 CHÂN LÝ Ở ĐÂY: KHÔNG HACK Z-INDEX, KHÔNG HACK Y-SORT ORIGIN NỮA!
 	# Cả cơ thể Mèo ở Y=0 phẳng. Ta chỉ KÉO MỖI BỨC ẢNH BAY LÊN TRỜI.
 	var c_height = float(cliff_height)
+	var visual_offset_y = -(elevation_float * c_height)
+	
 	if sprite:
-		sprite.position = Vector2(sprite_fix_x, -(elevation_float * c_height) + sprite_fix_y)
+		sprite.position = Vector2(sprite_fix_x, visual_offset_y + sprite_fix_y)
+
+	# 🚀 MẢNH GHÉP CUỐI CÙNG: Nhấc cái khung va chạm lên cùng độ cao với hình ảnh!
+	# Bây giờ khung của Mèo sẽ đập thẳng vào khung của Đèn ở tầng trên.
+	if col_shape:
+		col_shape.position.y = visual_offset_y
+
 
 func _unhandled_input(event: InputEvent) -> void:
 	var fsm = get_node_or_null("StateMachine")

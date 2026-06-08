@@ -185,6 +185,7 @@ _data = {
 
 [node name="Player" type="CharacterBody2D"]
 visibility_layer = 2
+y_sort_enabled = true
 motion_mode = 1
 script = ExtResource("1_kyqiw")
 

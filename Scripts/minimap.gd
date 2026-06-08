@@ -1,7 +1,7 @@
 extends ColorRect
 
-@onready var tile_map: Node2D = $"/root/Root/TileMap"
-@onready var player: CharacterBody2D = $"/root/Root/Player"
+@export var tile_map: Node2D 
+@export var player: CharacterBody2D
 
 # Cấu hình minimap
 @export var map_scale: float = 3.0 
