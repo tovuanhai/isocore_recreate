@@ -209,19 +209,9 @@ func unload_chunk_visuals(chunk_pos: Vector2i) -> void:
 				object_layers[h].set_cell(cell, -1)
 				
 			if spawned_objects.has(cell):
-				var item = spawned_objects[cell]
-				if typeof(item) == TYPE_DICTIONARY:
-					if is_instance_valid(item.main):
-						item.main.queue_free()
-					for s in item.slices:
-						if is_instance_valid(s):
-							s.queue_free()
-				else:
-					if is_instance_valid(item):
-						item.queue_free()
-						
+				if is_instance_valid(spawned_objects[cell]):
+					spawned_objects[cell].queue_free()
 				spawned_objects.erase(cell)
-
 
 
 
@@ -336,35 +326,6 @@ func find_safe_spawn_cell() -> Vector2i:
 				best_cell = cell
 	return best_cell
 
-# 🎯 CÔNG THỨC JOHNBRX HOÀN CHỈNH 🎯
-#func spawn_object_scene(cell: Vector2i, object_name: String, z: int) -> void:
-	#if not object_scenes.has(object_name): return
-	#
-	#var scene_path = "res://Scenes/" + object_name + ".tscn"
-	#var scene_res = load(scene_path)
-	#if not scene_res: return
-	#
-	#var obj_instance = scene_res.instantiate()
-	#
-	## 1. Thêm vào làm CON của TileMap (Chung mâm với Player, thoát khỏi ma trận TileMapLayer)
-	#self.add_child(obj_instance)
-	#
-	## 2. Đặt vị trí vật lý sát mặt phẳng Y=0
-	#obj_instance.position = base_ground.map_to_local(cell)
-	#
-	##obj_instance.z_index = z
-	#
-	## 3. KÉO MỖI HÌNH ẢNH LÊN NÚI (Công thức John)
-	#var offset_y = -(z * cliff_height)
-	#for child in obj_instance.get_children():
-		## Chỉ nhấc hình ảnh/ánh sáng, BỎ QUA các khung va chạm vật lý
-		#if child is Node2D and not child is CollisionShape2D and not child is CollisionPolygon2D:
-			#child.position.y += offset_y
-			#
-	## 4. Lưu vào danh sách để quản lý bộ nhớ
-	#spawned_objects[cell] = obj_instance
-# 🎯 CÔNG THỨC JOHNBRX HOÀN CHỈNH (PHIÊN BẢN TỐI ƯU GODOT 4) 🎯
-
 
 
 func spawn_object_scene(cell: Vector2i, object_name: String, z: int) -> void:
@@ -376,48 +337,12 @@ func spawn_object_scene(cell: Vector2i, object_name: String, z: int) -> void:
 		return
 
 	var obj = scene_res.instantiate()
+	get_parent().add_child.call_deferred(obj)
 	
-	# Gọi init trước để nó tự cắt lát
+	# Khóa cứng va chạm vào đúng tâm ô lưới
+	obj.position = base_ground.map_to_local(cell)
+
 	if obj.has_method("init"):
-		obj.call("init", z)
+		obj.call("init", z, cliff_height)
 
-	# Ném gốc đèn vào đúng tầng đất của nó
-	object_layers[z].add_child(obj)
-	var flat_pos = base_ground.map_to_local(cell)
-	obj.position = flat_pos
-
-	var tracked_slices = []
-
-	# PHÂN PHÁT LÁT CẮT LÊN TRỜI
-	for child in obj.get_children():
-		if child is Sprite2D and child.name.begins_with("JohnSlice_"):
-			var slice_index = child.name.get_slice("_", 1).to_int()
-			var target_z = z + slice_index
-			
-			if target_z > max_elevation:
-				target_z = max_elevation
-				
-			if target_z == z:
-				continue
-				
-			var local_pos = child.position
-			var original_offset = child.offset
-			
-			# Chuyển nhà sang Layer tương ứng với độ cao đỉnh đèn
-			obj.remove_child(child)
-			object_layers[target_z].add_child(child)
-			
-			# 🎯 BÙ TRỪ TUYỆT ĐỐI:
-			# - Giữ nguyên position (Y-Sort) bằng cách cộng dồn flat_pos.
-			# - Đẩy offset xuống đúng bằng lượng Layer nhấc lên (diff_y).
-			child.position = flat_pos + local_pos
-			
-			var diff_y = (target_z - z) * cliff_height
-			child.offset = original_offset + Vector2(0, diff_y)
-			
-			tracked_slices.append(child)
-
-	spawned_objects[cell] = {
-		"main": obj,
-		"slices": tracked_slices
-	}
+	spawned_objects[cell] = obj
