@@ -26,6 +26,8 @@ material = SubResource("ShaderMaterial_y7y61")
 [node name="TileMap" type="Node2D" parent="."]
 y_sort_enabled = true
 script = ExtResource("1_p70al")
+max_elevation = 20
+deep_water_color = Color(0.0879902, 0.271561, 0.440561, 1)
 
 [node name="Layer0" type="TileMapLayer" parent="TileMap"]
 y_sort_enabled = true

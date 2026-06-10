@@ -24,6 +24,7 @@ var spawned_objects: Dictionary = {}
 
 @export var water_level: int = 3
 var water_tile: Vector2i = Vector2i(1, 1)
+@export var deep_water_color: Color = Color("#1a4d7c")
 
 var biomes = {
 	"grass": [Vector2i(2, 3), Vector2i(2, 0), Vector2i(3, 0)],
@@ -46,7 +47,6 @@ func _ready() -> void:
 	if player:
 		spawner.setup_safe_spawn()
 
-# Hàm này tạo các Layer vật lý, thuộc về Giám Đốc là chuẩn nhất
 func setup_elevation_layers() -> void:
 	y_sort_enabled = true
 	ground_layers.clear()
@@ -76,9 +76,23 @@ func setup_elevation_layers() -> void:
 		g_layer.y_sort_enabled = true
 		o_layer.y_sort_enabled = true
 		
+		# --- TÍNH TOÁN ĐỘ SÁNG MẶC ĐỊNH (CÀNG CAO CÀNG SÁNG) ---
 		var t: float = float(i) / max_elevation
 		var brightness: float = lerp(0.58, 1.0, t)
 		var mod_color := Color(brightness, brightness * 0.97, brightness * 0.93, 1.0)
+		
+		# =========================================================
+		# 🌊 THUẬT TOÁN NHUỘM MÀU ĐỘ SÂU (JOHN BRX ALGORITHM)
+		# =========================================================
+		if i < water_level:
+			# Công thức gốc: layerColorIncrease = 1 - (cell.z / seaLevel)
+			var layer_color_increase: float = 1.0 - (float(i) / float(water_level))
+			
+			# Lấy màu gốc trộn với màu vực sâu theo tỉ lệ độ sâu
+			# (Nhân thêm 0.85 để vẫn nhìn thấy mờ mờ vân gạch đất dưới đáy)
+			mod_color = mod_color.lerp(deep_water_color, layer_color_increase * 0.85)
+		
+		# Gán màu vào Layer
 		g_layer.self_modulate = mod_color
 		o_layer.self_modulate = mod_color
 		
