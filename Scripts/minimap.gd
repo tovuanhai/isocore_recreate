@@ -7,12 +7,15 @@ extends ColorRect
 @export var map_scale: float = 3.0 
 @export var vision_radius: int = 8 # Bán kính khám phá xung quanh người chơi
 
-# Bảng màu (Thay đổi mã màu theo ý thích của bạn)
+# Bảng màu (Đã thêm Tuyết)
 var biome_colors = {
 	"grass": Color("#e39c2f"),
-	"sand":  Color("#ceedef"),
+	"snow":  Color("#ffffff"), # Thêm màu trắng của tuyết
 	"dirt":  Color("#634832")
 }
+
+# Màu riêng cho nước
+var water_color = Color("#3282a8") 
 
 # Lưu trữ các ô đã đi qua
 var discovered_cells: Dictionary = {}
@@ -50,8 +53,16 @@ func _draw() -> void:
 				var data = tile_map.world_data[cell]
 				var elev = data["z"]
 				
-				# Lấy màu gốc và điều chỉnh độ sáng theo độ cao
-				var base_color = biome_colors.get(data["biome"], Color(0.2, 0.2, 0.2))
+				# 🌊 LUẬT MỚI: Check xem có phải là nước không
+				var is_water = data.get("is_water", false)
+				var base_color: Color
+				
+				if is_water:
+					base_color = water_color
+				else:
+					base_color = biome_colors.get(data["biome"], Color(0.2, 0.2, 0.2))
+				
+				# Lấy màu gốc và điều chỉnh độ sáng theo độ cao (Đáy biển càng sâu -> càng tối)
 				var brightness = 0.5 + (float(elev) / float(tile_map.max_elevation)) * 0.5
 				var final_color = base_color
 				final_color.v *= brightness

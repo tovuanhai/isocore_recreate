@@ -22,9 +22,12 @@ var ground_layers: Array[TileMapLayer] = []
 var object_layers: Array[TileMapLayer] = []
 var spawned_objects: Dictionary = {}
 
+@export var water_level: int = 3
+var water_tile: Vector2i = Vector2i(1, 1)
+
 var biomes = {
 	"grass": [Vector2i(2, 3), Vector2i(2, 0), Vector2i(3, 0)],
-	"sand": [Vector2i(7, 3), Vector2i(9, 3)],
+	"snow": [Vector2i(7, 3), Vector2i(9, 3)],
 	"dirt": [Vector2i(5, 0), Vector2i(5, 3), Vector2i(9, 0)]
 }
 
