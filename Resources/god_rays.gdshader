@@ -1,47 +1,35 @@
 shader_type canvas_item;
+render_mode blend_add;
 
-uniform float angle = -0.3;
-uniform float position = -0.2;
-uniform float spread : hint_range(0.0, 1.0) = 0.5;
-uniform float falloff : hint_range(0.0, 1.0) = 0.4; // Tăng falloff để tia sáng không bị cắt thô ở dưới
-uniform float speed = 0.5;
-uniform vec4 color : source_color = vec4(1.0, 0.9, 0.65, 0.8);
-uniform vec2 player_pos; // TRUYỀN VỊ TRÍ PLAYER VÀO ĐÂY (Neo tia sáng theo Mèo)
-uniform sampler2D screen_texture : hint_screen_texture, filter_linear_mipmap;
-
-float random(vec2 uv) {
-    return fract(sin(dot(uv, vec2(12.9898, 78.233))) * 43758.5453);
-}
-
-float noise(vec2 uv) {
-    vec2 i = floor(uv);
-    vec2 f = fract(uv);
-    vec2 u = f * f * (3.0 - 2.0 * f);
-    return mix(random(i), random(i + vec2(1.0, 0.0)), u.x) +
-           (random(i + vec2(0.0, 1.0)) - random(i)) * u.y * (1.0 - u.x) +
-           (random(i + vec2(1.0, 1.0)) - random(i + vec2(1.0, 0.0))) * u.x * u.y;
-}
+uniform vec4 ray_color : source_color = vec4(1.0, 0.85, 0.5, 0.15);
+uniform vec2 player_pos; // Nhận vị trí Mèo từ code
+uniform float angle = -0.6;
+uniform float speed = 0.05;
+uniform float ray_spacing = 0.003;
 
 void fragment() {
-    // Neo UV theo vị trí người chơi để tia sáng không bị "đơ"
-    vec2 uv = UV + (player_pos * 0.0005);
+    // 1. TỐI ƯU HÓA: Chuyển đổi UV của UI thành Tọa độ Thế Giới ảo
+    // SCREEN_PIXEL_SIZE là biến có sẵn của Godot, nghịch đảo nó ra kích thước màn hình
+    vec2 screen_size = 1.0 / SCREEN_PIXEL_SIZE;
+    vec2 virtual_world_pos = player_pos + (UV - 0.5) * screen_size;
 
-    // Tạo luồng sáng dọc
-    vec2 ray_uv = (mat2(vec2(cos(angle), -sin(angle)), vec2(sin(angle), cos(angle))) * (uv - position)) / (uv.y + spread);
+    // 2. Tính toán tia sáng dựa trên tọa độ thế giới ảo (Đứng im như cắm cọc)
+    float projected_x = virtual_world_pos.x + virtual_world_pos.y * angle;
+    projected_x *= ray_spacing;
 
-    // Noise chuyển động
-    float n = noise(vec2(ray_uv.x * 10.0 + TIME * speed, 1.0));
+    float time_shift = TIME * speed;
 
-    // ẨN HIỆN: Dùng smoothstep để tia sáng mờ dần khi di chuyển xa tâm
-    float fade = smoothstep(0.8, 0.2, length(player_pos - FRAGCOORD.xy) * 0.001);
+    float wave1 = sin(projected_x + time_shift);
+    float wave2 = sin(projected_x * 0.6 - time_shift * 0.7);
+    float wave3 = cos(projected_x * 1.5 + time_shift * 1.2);
 
-    // KHÔNG CHẠM ĐÁY: Giới hạn độ dài tia sáng bằng falloff ở UV.y
-    float ray_mask = smoothstep(1.0, falloff, uv.y);
+    float combined_ray = (wave1 + wave2 * 1.2 + wave3 * 0.6) / 2.8;
+    combined_ray = smoothstep(0.4, 0.7, combined_ray);
 
-    float rays = n * ray_mask * fade;
+    // 3. FIX LỖI SỌC NGOÀI VOID: Tạo mặt nạ Vignette
+    // Tia sáng chỉ chói ở ngay tâm màn hình (chỗ con Mèo), và đen xì ở các mép viền
+    float dist_to_center = distance(UV, vec2(0.5));
+    float mask = smoothstep(0.5, 0.15, dist_to_center);
 
-    vec4 scene_color = texture(screen_texture, SCREEN_UV);
-    vec3 shine = mix(scene_color.rgb, color.rgb, rays * color.a);
-
-    COLOR = vec4(shine, 1.0);
+    COLOR = ray_color * combined_ray * mask;
 }

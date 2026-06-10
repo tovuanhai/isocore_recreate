@@ -17,7 +17,7 @@ func update(_delta: float) -> void:
 		
 	# Mở mắt thấy có đường đi -> Sang trạng thái Move
 	if player.current_path.size() > 0:
-		transition_requested.emit("move")
+		transition_requested.emit("Move")
 	# Hoặc thấy có cục đá ở ngay sát cạnh -> Sang trạng thái Mine
 	elif player.has_pending_mine:
-		transition_requested.emit("mine")
+		transition_requested.emit("Mine")

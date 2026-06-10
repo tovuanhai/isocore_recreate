@@ -1,6 +1,9 @@
 extends Node
 
-@onready var hub = get_parent()
+var hub: Node2D
+
+func initialize(p_hub: Node2D) -> void:
+	hub = p_hub
 
 func render_voxel_column(pos_2d: Vector2i) -> void:
 	if hub.world_data.has(pos_2d):
@@ -106,6 +109,10 @@ func find_safe_spawn_cell() -> Vector2i:
 			var cell: Vector2i = Vector2i(x, y)
 			var elev: int = get_cell_elevation(cell)
 			if elev == -1 or elev <= hub.water_level: continue
+			
+			# Kiểm tra xem ô này có vật thể không (dựa vào world_data)
+			if hub.world_data.has(cell) and hub.world_data[cell].get("object", "none") != "none":
+				continue
 			
 			var score: int = (hub.max_elevation - elev) * 120
 			var flat_bonus: int = 0

@@ -8,44 +8,18 @@
 [ext_resource type="Texture2D" uid="uid://c63xm1a1lndo7" path="res://Assets/UI/minimap_frame.png" id="4_hfhsn"]
 [ext_resource type="Shader" uid="uid://b17lgnx81f4ix" path="res://Resources/god_rays.gdshader" id="7_xjg7p"]
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_xjg7p"]
-shader = ExtResource("7_xjg7p")
-shader_parameter/angle = -0.3
-shader_parameter/position = -0.2
-shader_parameter/spread = 0.5
-shader_parameter/falloff = 0.989
-shader_parameter/speed = 1.0
-shader_parameter/color = Color(1, 0.9, 0.65, 0.8)
-shader_parameter/player_pos = Vector2(0, 0)
-
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_dewlx"]
 texture = ExtResource("2_nxvpl")
 
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_mg6lk"]
+shader = ExtResource("7_xjg7p")
+shader_parameter/ray_color = Color(1, 0.9, 0.65, 0.15)
+shader_parameter/player_pos = Vector2(0, 0)
+shader_parameter/angle = -0.3
+shader_parameter/speed = 1.0
+shader_parameter/ray_spacing = 3.0
+
 [node name="CanvasLayer" type="CanvasLayer"]
-
-[node name="GodRaysContainer" type="Control" parent="."]
-custom_minimum_size = Vector2(1280, 720)
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_right = 2465.0
-offset_bottom = 1416.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-
-[node name="ColorRect" type="ColorRect" parent="GodRaysContainer"]
-material = SubResource("ShaderMaterial_xjg7p")
-custom_minimum_size = Vector2(1280, 720)
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_bottom = 11211.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
 
 [node name="PanelContainer" type="PanelContainer" parent="."]
 clip_children = 1
@@ -83,3 +57,25 @@ offset_bottom = 23.0
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_fonts/font = ExtResource("1_48q88")
 script = ExtResource("1_nxvpl")
+
+[node name="GodRaysContainer" type="Control" parent="."]
+visible = false
+custom_minimum_size = Vector2(1280, 720)
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="ColorRect" type="ColorRect" parent="GodRaysContainer"]
+material = SubResource("ShaderMaterial_mg6lk")
+custom_minimum_size = Vector2(1280, 720)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2

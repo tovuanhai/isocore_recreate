@@ -1,33 +1,23 @@
-[gd_scene load_steps=12 format=3 uid="uid://cus0a667ydguj"]
+[gd_scene load_steps=10 format=3 uid="uid://cus0a667ydguj"]
 
 [ext_resource type="TileSet" uid="uid://0u8hh8mx7hqj" path="res://Resources/World.tres" id="1_5cjrv"]
-[ext_resource type="Shader" uid="uid://dvbkjiu3nk33s" path="res://Resources/line_separator.gdshader" id="1_45d1s"]
 [ext_resource type="Script" uid="uid://dhqx1aw1r1gr5" path="res://Scripts/tile_map.gd" id="1_p70al"]
 [ext_resource type="PackedScene" uid="uid://dw82ffshcw0we" path="res://Scenes/Player.tscn" id="3_5nsto"]
 [ext_resource type="PackedScene" uid="uid://dm2gsuvv6qynt" path="res://Scenes/UI.tscn" id="4_gjpho"]
 [ext_resource type="Script" uid="uid://cd3iflck5lh7q" path="res://Scripts/world_generator.gd" id="4_kn06e"]
 [ext_resource type="Script" uid="uid://d31bfp0sh33xx" path="res://Scripts/chunk_manager.gd" id="5_7yo87"]
-[ext_resource type="Script" uid="uid://cccbvw43wgbe8" path="res://Scripts/dynamic_camera.gd" id="5_p70al"]
 [ext_resource type="Script" uid="uid://c6vyy7vvq7gcb" path="res://Scripts/spawner.gd" id="6_ti1bm"]
 [ext_resource type="Script" uid="uid://ibk6rusiy4hq" path="res://Scripts/hover_manager.gd" id="7_op4cu"]
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_y7y61"]
-shader = ExtResource("1_45d1s")
-shader_parameter/line_color = Color(0.05, 0.2, 0.05, 1)
-shader_parameter/line_thickness = 1.0
+[ext_resource type="Script" uid="uid://cccbvw43wgbe8" path="res://Scripts/dynamic_camera.gd" id="9_ti1bm"]
 
 [node name="Root" type="Node2D"]
 y_sort_enabled = true
-
-[node name="CanvasGroup" type="CanvasGroup" parent="."]
-visible = false
-material = SubResource("ShaderMaterial_y7y61")
 
 [node name="TileMap" type="Node2D" parent="."]
 y_sort_enabled = true
 script = ExtResource("1_p70al")
 max_elevation = 20
-deep_water_color = Color(0.0879902, 0.271561, 0.440561, 1)
+deep_water_color = Color(0.029703, 0.138287, 0.238762, 1)
 
 [node name="Layer0" type="TileMapLayer" parent="TileMap"]
 y_sort_enabled = true
@@ -59,9 +49,11 @@ tile_map = NodePath("../../../TileMap")
 player = NodePath("../../../Player")
 
 [node name="Camera2D" type="Camera2D" parent="." node_paths=PackedStringArray("player")]
+physics_interpolation_mode = 1
+position = Vector2(-16, -7)
 zoom = Vector2(5, 5)
-script = ExtResource("5_p70al")
-player = NodePath("../Player")
-follow_speed = 5.0
+script = ExtResource("9_ti1bm")
+player = NodePath("../Player/VisualRoot/Sprite2D")
 
+[editable path="Player"]
 [editable path="CanvasLayer"]

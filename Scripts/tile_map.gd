@@ -1,5 +1,10 @@
 extends Node2D
 
+
+signal chunk_update_requested(center: Vector2i)
+signal hover_update_requested
+signal world_ready
+
 @onready var base_ground: TileMapLayer = $Layer0
 @onready var base_object: TileMapLayer = $Layer1
 @onready var player: CharacterBody2D = $"../Player"
@@ -22,9 +27,12 @@ var ground_layers: Array[TileMapLayer] = []
 var object_layers: Array[TileMapLayer] = []
 var spawned_objects: Dictionary = {}
 
-@export var water_level: int = 3
+@export var water_level: int = 7
 var water_tile: Vector2i = Vector2i(1, 1)
 @export var deep_water_color: Color = Color("#1a4d7c")
+
+var cloud_material: ShaderMaterial
+var cloud_noise_tex: NoiseTexture2D
 
 var biomes = {
 	"grass": [Vector2i(2, 3), Vector2i(2, 0), Vector2i(3, 0)],
@@ -38,11 +46,22 @@ func _ready() -> void:
 	y_sort_enabled = true
 	setup_elevation_layers()
 	
-	# Gọi các trưởng phòng khởi động
+	# INJECT: Truyền reference Hub vào các con thay vì chúng tự get_parent()
+	world_generator.initialize(self)
+	chunk_manager.initialize(self)
+	spawner.initialize(self)
+	hover_manager.initialize(self)
+
 	world_generator.setup_noises()
 	hover_manager.setup_hover_polygon()
 	if player:
 		spawner.setup_safe_spawn()
+
+	if player and player.has_node("Sprite2D"):
+		var p_mat = cloud_material.duplicate()
+		player.get_node("Sprite2D").material = p_mat
+
+	world_ready.emit()
 
 func setup_elevation_layers() -> void:
 	y_sort_enabled = true
@@ -89,19 +108,13 @@ func setup_elevation_layers() -> void:
 			# (Nhân thêm 0.85 để vẫn nhìn thấy mờ mờ vân gạch đất dưới đáy)
 			mod_color = mod_color.lerp(deep_water_color, layer_color_increase * 0.85)
 		
-		# Gán màu vào Layer
-		g_layer.self_modulate = mod_color
-		o_layer.self_modulate = mod_color
+		g_layer.self_modulate = mod_color 
+		
 		
 		ground_layers.append(g_layer)
 		object_layers.append(o_layer)
 		
 		move_child(base_object, -1)
-
-# ====================================================================
-# 🌉 CÁC HÀM CẦU NỐI (BRIDGE FUNCTIONS) DÀNH CHO CÁC HỆ THỐNG BÊN NGOÀI
-# (UI, Player, Minimap... gọi vào đây, Giám Đốc sẽ tự động điều phối)
-# ====================================================================
 
 func get_hovered_tile() -> Vector2i:
 	return hover_manager.get_hovered_tile()
@@ -113,12 +126,7 @@ func get_cell_elevation(cell: Vector2i) -> int:
 
 func has_obstacle(cell: Vector2i, elevation: int) -> bool:
 	return hover_manager.has_obstacle(cell, elevation)
-
-
-# ====================================================================
-# 🌉 CÁC BIẾN CẦU NỐI (BRIDGE PROPERTIES) DÀNH CHO BÊN NGOÀI ĐỌC DỮ LIỆU
-# ====================================================================
-
+	
 var current_chunk: Vector2i:
 	get: return chunk_manager.current_chunk
 

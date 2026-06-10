@@ -1,9 +1,14 @@
 extends Node
 
-@onready var hub = get_parent()
+
 var biome_noise: FastNoiseLite
 var elevation_noise: FastNoiseLite
 var density_noise: FastNoiseLite # 🌿 Lớp Bản đồ nhiệt quản lý Cụm
+
+var hub: Node2D  # ← Thay @onready var hub = get_parent()
+
+func initialize(p_hub: Node2D) -> void:
+	hub = p_hub
 
 func setup_noises() -> void:
 	biome_noise = FastNoiseLite.new()

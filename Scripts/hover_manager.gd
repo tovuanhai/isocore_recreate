@@ -1,7 +1,10 @@
 extends Node
 
-@onready var hub = get_parent()
+var hub: Node2D
 var hover_effect: Polygon2D
+
+func initialize(p_hub: Node2D) -> void:
+	hub = p_hub
 
 func setup_hover_polygon() -> void:
 	hover_effect = Polygon2D.new()
@@ -59,9 +62,9 @@ func has_obstacle(cell: Vector2i, elevation: int) -> bool:
 	if hub.world_data.has(cell):
 		var data = hub.world_data[cell]
 		
-		# 1. LUẬT MỚI: Cấm bơi lội (Nước là chướng ngại vật tuyệt đối)
-		if data.get("is_water", false):
-			return true
+		## 1. LUẬT MỚI: Cấm bơi lội (Nước là chướng ngại vật tuyệt đối)
+		#if data.get("is_water", false):
+			#return true
 			
 		# 2. Cấm leo trèo: Lệch độ cao (Vách đá)
 		if data["z"] != elevation: 
