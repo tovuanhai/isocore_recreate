@@ -15,32 +15,41 @@ signal world_ready
 @onready var spawner = $Spawner
 @onready var hover_manager = $HoverManager
 
-# 📦 KHO DỮ LIỆU DÙNG CHUNG (Giữ nguyên 100% thông số của ông)
-var world_data: Dictionary = {}
-@export var chunk_size: int = 16
-@export var render_distance: int = 2
-@export var cliff_height: int = 6
-@export var max_elevation: int = 13
-@export var hover_face_height: int = 3
+@export var config: WorldConfig
 
+# --- ĐỌC TỪ CONFIG ---
+var chunk_size: int:
+	get: return config.chunk_size
+
+var render_distance: int:
+	get: return config.render_distance
+
+var cliff_height: int:
+	get: return config.cliff_height
+
+var max_elevation: int:
+	get: return config.max_elevation
+
+var water_level: int:
+	get: return config.water_level
+
+var deep_water_color: Color:
+	get: return config.deep_water_color
+
+var water_tile: Vector2i:
+	get: return config.water_tile
+
+var biomes: Dictionary:
+	get: return config.get_biomes()
+
+var object_scenes: Array[String]:
+	get: return config.object_scenes
+
+# --- RUNTIME DATA (không phải config, giữ nguyên) ---
 var ground_layers: Array[TileMapLayer] = []
 var object_layers: Array[TileMapLayer] = []
 var spawned_objects: Dictionary = {}
-
-@export var water_level: int = 7
-var water_tile: Vector2i = Vector2i(1, 1)
-@export var deep_water_color: Color = Color("#1a4d7c")
-
-var cloud_material: ShaderMaterial
-var cloud_noise_tex: NoiseTexture2D
-
-var biomes = {
-	"grass": [Vector2i(2, 3), Vector2i(2, 0), Vector2i(3, 0)],
-	"snow": [Vector2i(7, 3), Vector2i(9, 3)],
-	"dirt": [Vector2i(5, 0), Vector2i(5, 3), Vector2i(9, 0)]
-}
-
-var object_scenes: Array[String] = ["Grass_Tree", "rock1", "Snow_Tree"]
+var world_data: Dictionary = {}
 
 func _ready() -> void:
 	y_sort_enabled = true
@@ -57,9 +66,9 @@ func _ready() -> void:
 	if player:
 		spawner.setup_safe_spawn()
 
-	if player and player.has_node("Sprite2D"):
-		var p_mat = cloud_material.duplicate()
-		player.get_node("Sprite2D").material = p_mat
+	#if player and player.has_node("Sprite2D"):
+		#var p_mat = cloud_material.duplicate()
+		#player.get_node("Sprite2D").material = p_mat
 
 	world_ready.emit()
 

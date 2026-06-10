@@ -11,23 +11,24 @@ func initialize(p_hub: Node2D) -> void:
 	hub = p_hub
 
 func setup_noises() -> void:
+	var cfg = hub.config
+
+	# ✅ new() TRƯỚC, set properties SAU
 	biome_noise = FastNoiseLite.new()
 	biome_noise.seed = randi()
-	biome_noise.frequency = 0.015
-	
+	biome_noise.frequency = cfg.biome_noise_frequency
+
 	elevation_noise = FastNoiseLite.new()
 	elevation_noise.seed = randi() + 777
 	elevation_noise.noise_type = FastNoiseLite.TYPE_CELLULAR
 	elevation_noise.cellular_return_type = FastNoiseLite.RETURN_CELL_VALUE
-	elevation_noise.frequency = 0.025 
+	elevation_noise.frequency = cfg.elevation_noise_frequency
 	elevation_noise.fractal_type = FastNoiseLite.FRACTAL_PING_PONG
 
-	# --- SETUP NOISE QUẦN THỂ ---
 	density_noise = FastNoiseLite.new()
 	density_noise.seed = randi() + 999
-	# Tần số cao hơn biome một chút để tạo các cụm (cluster) rải rác
-	density_noise.frequency = 0.035 
-	density_noise.fractal_type = FastNoiseLite.FRACTAL_FBM 
+	density_noise.frequency = cfg.density_noise_frequency
+	density_noise.fractal_type = FastNoiseLite.FRACTAL_FBM
 
 func generate_chunk_data_and_render(chunk_pos: Vector2i) -> void:
 	var start_x = chunk_pos.x * hub.chunk_size

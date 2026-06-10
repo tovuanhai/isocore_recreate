@@ -68,3 +68,37 @@ func get_path_cells(start_cell: Vector2i, end_cell: Vector2i) -> Array[Vector2i]
 		var x = (id % 20000) - 10000
 		result_path.append(Vector2i(x, y))
 	return result_path
+
+func move_along_path(player, tile_map, delta: float, speed: float, is_swimming: bool) -> String:
+	if player.current_path.is_empty():
+		player.velocity = Vector2.ZERO
+		if not is_swimming and player.has_pending_mine:
+			return "Mine"
+		return "Idle"
+
+	var target = player.current_path[0]
+	var cell = tile_map.base_ground.local_to_map(tile_map.base_ground.to_local(target))
+	var elev = tile_map.get_cell_elevation(cell)
+
+	# --- KIỂM TRA ĐỊA HÌNH → Đề xuất đổi state ---
+	if elev != -1:
+		if not is_swimming and elev <= tile_map.water_level:
+			return "Swim"
+		if is_swimming and elev > tile_map.water_level:
+			return "Move"
+
+	# --- DI CHUYỂN ---
+	var dir = player.global_position.direction_to(target)
+	player.global_position = player.global_position.move_toward(target, speed * delta)
+
+	if player.global_position.distance_to(target) < 0.5:
+		player.global_position = target
+		player.current_path.remove_at(0)
+
+	# --- ANIMATION (Utils lo, State không cần đụng) ---
+	player.last_dir = player.get_4_way_dir(rad_to_deg(dir.angle()))
+	var anim_name = "walk_" + player.last_dir
+	if player.anim_player.has_animation(anim_name):
+		player.anim_player.play(anim_name)
+
+	return "" # Không cần đổi state

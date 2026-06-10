@@ -1,6 +1,6 @@
 [gd_scene load_steps=5 format=3 uid="uid://dots4a31oqmyy"]
 
-[ext_resource type="Script" uid="uid://hfwldcf8t326" path="res://Scripts/rock_1.gd" id="1_8kkub"]
+[ext_resource type="Script" uid="uid://bixptm7w4qh08" path="res://Scripts/objects.gd" id="1_8kkub"]
 [ext_resource type="Texture2D" uid="uid://opjde3sqhxan" path="res://Assets/Tileset/Pixel Isometric 16x16/Tiles2.png" id="1_tmokt"]
 [ext_resource type="Texture2D" uid="uid://dtfvatxcys261" path="res://Assets/Tileset/NormalMap/Tiles2_normal.png" id="2_b6b3p"]
 

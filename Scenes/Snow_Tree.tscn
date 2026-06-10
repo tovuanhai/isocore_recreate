@@ -1,6 +1,6 @@
 [gd_scene load_steps=6 format=3 uid="uid://dxm63r65ldjsf"]
 
-[ext_resource type="Script" uid="uid://bixptm7w4qh08" path="res://Scripts/light_bulb.gd" id="1_e3d2i"]
+[ext_resource type="Script" uid="uid://bixptm7w4qh08" path="res://Scripts/objects.gd" id="1_e3d2i"]
 [ext_resource type="Texture2D" uid="uid://opjde3sqhxan" path="res://Assets/Tileset/Pixel Isometric 16x16/Tiles2.png" id="2_trtam"]
 [ext_resource type="Texture2D" uid="uid://dtfvatxcys261" path="res://Assets/Tileset/NormalMap/Tiles2_normal.png" id="3_hjtow"]
 [ext_resource type="Texture2D" uid="uid://xbyynmfrweiq" path="res://Assets/Prototype_Character/light_source.png" id="4_srw7n"]
