@@ -1,11 +1,15 @@
-[gd_scene load_steps=8 format=3 uid="uid://cus0a667ydguj"]
+[gd_scene load_steps=12 format=3 uid="uid://cus0a667ydguj"]
 
 [ext_resource type="TileSet" uid="uid://0u8hh8mx7hqj" path="res://Resources/World.tres" id="1_5cjrv"]
 [ext_resource type="Shader" uid="uid://dvbkjiu3nk33s" path="res://Resources/line_separator.gdshader" id="1_45d1s"]
 [ext_resource type="Script" uid="uid://dhqx1aw1r1gr5" path="res://Scripts/tile_map.gd" id="1_p70al"]
 [ext_resource type="PackedScene" uid="uid://dw82ffshcw0we" path="res://Scenes/Player.tscn" id="3_5nsto"]
 [ext_resource type="PackedScene" uid="uid://dm2gsuvv6qynt" path="res://Scenes/UI.tscn" id="4_gjpho"]
+[ext_resource type="Script" uid="uid://cd3iflck5lh7q" path="res://Scripts/world_generator.gd" id="4_kn06e"]
+[ext_resource type="Script" uid="uid://d31bfp0sh33xx" path="res://Scripts/chunk_manager.gd" id="5_7yo87"]
 [ext_resource type="Script" uid="uid://cccbvw43wgbe8" path="res://Scripts/dynamic_camera.gd" id="5_p70al"]
+[ext_resource type="Script" uid="uid://c6vyy7vvq7gcb" path="res://Scripts/spawner.gd" id="6_ti1bm"]
+[ext_resource type="Script" uid="uid://ibk6rusiy4hq" path="res://Scripts/hover_manager.gd" id="7_op4cu"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_y7y61"]
 shader = ExtResource("1_45d1s")
@@ -16,6 +20,7 @@ shader_parameter/line_thickness = 1.0
 y_sort_enabled = true
 
 [node name="CanvasGroup" type="CanvasGroup" parent="."]
+visible = false
 material = SubResource("ShaderMaterial_y7y61")
 
 [node name="TileMap" type="Node2D" parent="."]
@@ -29,6 +34,18 @@ tile_set = ExtResource("1_5cjrv")
 [node name="Layer1" type="TileMapLayer" parent="TileMap"]
 y_sort_enabled = true
 tile_set = ExtResource("1_5cjrv")
+
+[node name="WorldGenerator" type="Node" parent="TileMap"]
+script = ExtResource("4_kn06e")
+
+[node name="ChunkManager" type="Node" parent="TileMap"]
+script = ExtResource("5_7yo87")
+
+[node name="Spawner" type="Node" parent="TileMap"]
+script = ExtResource("6_ti1bm")
+
+[node name="HoverManager" type="Node" parent="TileMap"]
+script = ExtResource("7_op4cu")
 
 [node name="Player" parent="." instance=ExtResource("3_5nsto")]
 position = Vector2(-16, -7)
