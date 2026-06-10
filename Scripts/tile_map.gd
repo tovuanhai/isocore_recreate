@@ -32,10 +32,7 @@ var biomes = {
 	"dirt": [Vector2i(5, 0), Vector2i(5, 3), Vector2i(9, 0)]
 }
 
-var object_scenes = {
-	"LightBulb": {"source_id": 4, "alt_id": 1},
-	"rock1": {"source_id": 2, "alt_id": 1}
-}
+var object_scenes: Array[String] = ["Grass_Tree", "rock1", "Snow_Tree"]
 
 func _ready() -> void:
 	y_sort_enabled = true

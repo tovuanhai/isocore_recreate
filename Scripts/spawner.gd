@@ -36,7 +36,7 @@ func render_voxel_column(pos_2d: Vector2i) -> void:
 
 
 func spawn_object_scene(cell: Vector2i, object_name: String, z: int) -> void:
-	if not hub.object_scenes.has(object_name) or hub.spawned_objects.has(cell):
+	if not object_name in hub.object_scenes or hub.spawned_objects.has(cell):
 		return
 
 	var scene_res = load("res://Scenes/" + object_name + ".tscn")

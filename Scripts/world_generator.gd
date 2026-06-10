@@ -3,6 +3,7 @@ extends Node
 @onready var hub = get_parent()
 var biome_noise: FastNoiseLite
 var elevation_noise: FastNoiseLite
+var density_noise: FastNoiseLite # 🌿 Lớp Bản đồ nhiệt quản lý Cụm
 
 func setup_noises() -> void:
 	biome_noise = FastNoiseLite.new()
@@ -15,6 +16,13 @@ func setup_noises() -> void:
 	elevation_noise.cellular_return_type = FastNoiseLite.RETURN_CELL_VALUE
 	elevation_noise.frequency = 0.025 
 	elevation_noise.fractal_type = FastNoiseLite.FRACTAL_PING_PONG
+
+	# --- SETUP NOISE QUẦN THỂ ---
+	density_noise = FastNoiseLite.new()
+	density_noise.seed = randi() + 999
+	# Tần số cao hơn biome một chút để tạo các cụm (cluster) rải rác
+	density_noise.frequency = 0.035 
+	density_noise.fractal_type = FastNoiseLite.FRACTAL_FBM 
 
 func generate_chunk_data_and_render(chunk_pos: Vector2i) -> void:
 	var start_x = chunk_pos.x * hub.chunk_size
@@ -38,28 +46,51 @@ func generate_chunk_data_and_render(chunk_pos: Vector2i) -> void:
 				# 🌊 NẾU LÀ ĐÁY BIỂN
 				if elevation <= hub.water_level:
 					is_water = true
-					biome_name = "dirt" # Dưới nước auto là Đất
+					biome_name = "dirt"
 				
 				# 🏔️ NẾU LÀ ĐẤT LIỀN
 				else:
 					var b_val = biome_noise.get_noise_2d(global_x, global_y)
-					# Tùy chỉnh tỉ lệ: Âm là tuyết, Dương là cỏ
 					if b_val < 0.0: biome_name = "snow"
 					else: biome_name = "grass"
 					
-					# Chỉ cho mọc Đèn/Đá trên bãi Cỏ (Không mọc trên tuyết và nước)
-					if biome_name == "grass": 
+					# ===================================================
+					# 🌲 LOGIC MỌC CỤM (ÁP DỤNG CHO CẢ CỎ VÀ TUYẾT)
+					# ===================================================
+					if biome_name == "grass" or biome_name == "snow": 
+						# Tự động chọn loại cây theo Biome
+						var tree_type = "Grass_Tree"
+						if biome_name == "snow":
+							tree_type = "Snow_Tree"
+							
+						# Quét bản đồ nhiệt
+						var d_val = density_noise.get_noise_2d(global_x, global_y)
 						var rand = randf()
-						if rand < 0.05: spawn_obj = "LightBulb"
-						elif rand < 0.12: spawn_obj = "rock1"
+						
+						# 1. VÙNG RỪNG RẬM (Màu mỡ: Noise > 0.25)
+						if d_val > 0.25:
+							if rand < 0.35: 
+								spawn_obj = tree_type
+								
+						# 2. VÙNG BÃI ĐÁ (Cằn cỗi: Noise < -0.25)
+						elif d_val < -0.25:
+							if rand < 0.20: 
+								spawn_obj = "rock1"
+								
+						# 3. ĐỒNG BẰNG (Bình thường: Nằm ở giữa)
+						else:
+							if rand < 0.02: 
+								spawn_obj = tree_type
+							elif rand < 0.03:
+								spawn_obj = "rock1"
 						
 				hub.world_data[pos_2d] = {
 					"type": "ground", 
 					"biome": biome_name, 
 					"z": elevation,
 					"object": spawn_obj,
-					"is_water": is_water # <--- Lưu lại cái tick xem ô này có ngập nước không
+					"is_water": is_water
 				}
 			
-			# Tính toán xong thì quăng cho Spawner vẽ
+			# Ném cho Spawner vẽ
 			hub.spawner.render_voxel_column(pos_2d)
