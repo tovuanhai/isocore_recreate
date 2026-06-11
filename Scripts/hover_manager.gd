@@ -75,7 +75,3 @@ func has_obstacle(cell: Vector2i, elevation: int) -> bool:
 			return true
 			
 	return false
-
-func get_cell_elevation(cell: Vector2i) -> int:
-	if hub.world_data.has(cell): return hub.world_data[cell]["z"]
-	return -1

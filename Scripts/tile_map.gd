@@ -65,11 +65,7 @@ func _ready() -> void:
 	hover_manager.setup_hover_polygon()
 	if player:
 		spawner.setup_safe_spawn()
-
-	#if player and player.has_node("Sprite2D"):
-		#var p_mat = cloud_material.duplicate()
-		#player.get_node("Sprite2D").material = p_mat
-
+		
 	world_ready.emit()
 
 func setup_elevation_layers() -> void:
@@ -115,7 +111,7 @@ func setup_elevation_layers() -> void:
 			
 			# Lấy màu gốc trộn với màu vực sâu theo tỉ lệ độ sâu
 			# (Nhân thêm 0.85 để vẫn nhìn thấy mờ mờ vân gạch đất dưới đáy)
-			mod_color = mod_color.lerp(deep_water_color, layer_color_increase * 0.85)
+			mod_color = mod_color.lerp(deep_water_color, layer_color_increase)
 		
 		g_layer.self_modulate = mod_color 
 		

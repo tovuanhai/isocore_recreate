@@ -1,14 +1,14 @@
 [gd_resource type="Resource" script_class="WorldConfig" load_steps=2 format=3 uid="uid://llqk107svpil"]
 
-[ext_resource type="Script" uid="uid://c6wkovf5uax84" path="res://Scripts/world_config.gd" id="1_2c4nl"]
+[ext_resource type="Script" uid="uid://c6wkovf5uax84" path="res://Scripts/Autoloads/world_config.gd" id="1_2c4nl"]
 
 [resource]
 script = ExtResource("1_2c4nl")
 chunk_size = 16
 render_distance = 2
-max_elevation = 13
+max_elevation = 20
 cliff_height = 6
-water_level = 5
+water_level = 7
 deep_water_color = Color(0.101961, 0.301961, 0.486275, 1)
 hover_face_height = 3
 biome_grass = Array[Vector2i]([Vector2i(2, 3), Vector2i(2, 0), Vector2i(3, 0)])
@@ -17,10 +17,15 @@ biome_dirt = Array[Vector2i]([Vector2i(5, 0), Vector2i(5, 3), Vector2i(9, 0)])
 water_tile = Vector2i(1, 1)
 object_scenes = Array[String](["Grass_Tree", "rock1", "Snow_Tree"])
 biome_noise_frequency = 0.015
-elevation_noise_frequency = 0.025
 density_noise_frequency = 0.035
+dense_forest_threshold = 0.25
 dense_forest_chance = 0.35
 sparse_rock_chance = 0.2
 plain_tree_chance = 0.02
 plain_rock_chance = 0.03
+move_snap_threshold = 0.5
+cliff_step_tolerance = 1
+safe_spawn_search_range = 32
+safe_spawn_elev_weight = 120
+safe_spawn_flat_bonus = 25
 metadata/_custom_type_script = "uid://c6wkovf5uax84"

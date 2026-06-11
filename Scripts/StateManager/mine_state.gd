@@ -1,6 +1,9 @@
 extends State
 
-@onready var player: Player = get_parent().get_parent() as Player
+var player: Player
+
+func initialize(p: Player) -> void:
+	player = p
 
 func enter():
 	var tile_pos = player.pending_mine_tile

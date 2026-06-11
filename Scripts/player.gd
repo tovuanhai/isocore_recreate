@@ -27,8 +27,6 @@ var elevation_tween: Tween
 
 @onready var col_shape: CollisionShape2D = get_node_or_null("CollisionShape2D")
 
-@onready var tile_map = get_parent().get_node("TileMap")
-
 func _ready() -> void:
 	z_index = 0
 	y_sort_enabled = true # Y-Sort gốc của Godot

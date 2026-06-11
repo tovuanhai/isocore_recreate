@@ -1,7 +1,9 @@
 extends State
 
-# Tìm ngược lên 2 bậc để lấy thân xác con mèo
-@onready var player: Player = get_parent().get_parent() as Player
+var player: Player
+
+func initialize(p: Player) -> void:
+	player = p
 
 func enter() -> void:
 	player.velocity = Vector2.ZERO

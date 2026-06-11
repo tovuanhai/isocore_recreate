@@ -87,10 +87,10 @@ func setup_safe_spawn() -> void:
 			hub.chunk_manager.loaded_chunks[chunk_pos] = true
 	
 	hub.chunk_manager.current_chunk = Vector2i(0, 0)
-	var spawn_cell := find_safe_spawn_cell()
+	var spawn_cell : Vector2i = await find_safe_spawn_cell()
 	if spawn_cell == Vector2i(-9999, -9999): return
 	
-	var elev := get_cell_elevation(spawn_cell)
+	var elev = hub.get_cell_elevation(spawn_cell)
 	hub.player._last_elev_cell = spawn_cell
 	hub.player.current_elevation = elev
 	hub.player.elevation_float = float(elev)
@@ -100,34 +100,32 @@ func setup_safe_spawn() -> void:
 
 
 func find_safe_spawn_cell() -> Vector2i:
-	var best_cell: Vector2i = Vector2i(-9999, -9999)
-	var best_score: int = -999999
-	var directions: Array[Vector2i] = [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]
+	var cfg = hub.config
+	var r = 32
+	var best_cell := Vector2i.ZERO  # Dùng (0,0) là fallback
+	var best_score := -999999
+	var directions: Array[Vector2i] = [Vector2i(1,0), Vector2i(-1,0), Vector2i(0,1), Vector2i(0,-1)]
 	
-	for x in range(-64, 65):
-		for y in range(-64, 65):
-			var cell: Vector2i = Vector2i(x, y)
-			var elev: int = get_cell_elevation(cell)
-			if elev == -1 or elev <= hub.water_level: continue
-			
-			# Kiểm tra xem ô này có vật thể không (dựa vào world_data)
+	# Tìm trong 1 frame, lấy ô tốt nhất tìm được
+	for x in range(-r, r + 1):
+		for y in range(-r, r + 1):
+			var cell := Vector2i(x, y)
+			var elev : int = hub.get_cell_elevation(cell)
+			if elev == -1 or elev <= hub.water_level:
+				continue
 			if hub.world_data.has(cell) and hub.world_data[cell].get("object", "none") != "none":
 				continue
 			
-			var score: int = (hub.max_elevation - elev) * 120
-			var flat_bonus: int = 0
+			var score : int = (hub.max_elevation - elev) * cfg.safe_spawn_elev_weight
+			var flat_bonus := 0
 			for dir in directions:
-				var nc = cell + dir
-				var ne = get_cell_elevation(nc)
-				if ne != -1 and abs(ne - elev) <= 1:
+				var ne = hub.get_cell_elevation(cell + dir)
+				if ne != -1 and abs(ne - elev) <= cfg.cliff_step_tolerance:
 					flat_bonus += 1
-			score += flat_bonus * 25
+			score += flat_bonus * cfg.safe_spawn_flat_bonus
 			
 			if score > best_score:
 				best_score = score
 				best_cell = cell
-	return best_cell
-
-func get_cell_elevation(cell: Vector2i) -> int:
-	if hub.world_data.has(cell): return hub.world_data[cell]["z"]
-	return -1
+	
+	return best_cell  # Bỏ await

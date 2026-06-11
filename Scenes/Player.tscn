@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3 uid="uid://dw82ffshcw0we"]
+[gd_scene load_steps=22 format=3 uid="uid://dw82ffshcw0we"]
 
 [ext_resource type="Script" uid="uid://d0v5351220yqk" path="res://Scripts/player.gd" id="1_kyqiw"]
 [ext_resource type="Texture2D" uid="uid://bhr64sqblr6fa" path="res://Assets/Character/Cat_1_spritesheet_free.png" id="2_kyqiw"]
@@ -8,6 +8,7 @@
 [ext_resource type="Script" uid="uid://cuagkvpwpqarv" path="res://Scripts/StateManager/move_state.gd" id="6_52ee3"]
 [ext_resource type="Script" uid="uid://dldbusgny313l" path="res://Scripts/StateManager/mine_state.gd" id="7_bhhdu"]
 [ext_resource type="Script" uid="uid://bniq8gtoyg35o" path="res://Scripts/StateManager/swim_state.gd" id="8_bhhdu"]
+[ext_resource type="Script" uid="uid://coja6vutcavte" path="res://Scripts/ManagerScripts/StatusEffectManager.gd" id="9_megsn"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_kyqiw"]
 radius = 2.23607
@@ -225,3 +226,6 @@ script = ExtResource("8_bhhdu")
 libraries = {
 &"": SubResource("AnimationLibrary_ksbbd")
 }
+
+[node name="StatusEffectManager" type="Node" parent="."]
+script = ExtResource("9_megsn")

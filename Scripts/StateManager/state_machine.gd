@@ -5,8 +5,12 @@ extends Node
 
 var current_state: State
 var states: Dictionary = {}
+@onready var player = get_parent()  # SM là con trực tiếp của Player
 
 func _ready() -> void:
+	for state in get_children():
+		if state.has_method("initialize"):
+			state.initialize(player)
 	# BƯỚC 1: Quét và kết nạp tất cả các State con
 	for child in get_children():
 		# Nếu Godot ngáo không nhận class_name State, ta check bằng tên node luôn cho chắc!

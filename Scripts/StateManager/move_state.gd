@@ -1,6 +1,9 @@
 extends State
 
-@onready var player: Player = get_parent().get_parent() as Player
+var player: Player
+
+func initialize(p: Player) -> void:
+	player = p
 
 func physics_update(delta: float) -> void:
 	var next_state = MovementUtils.move_along_path(
