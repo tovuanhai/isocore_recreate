@@ -87,6 +87,12 @@ func setup_safe_spawn() -> void:
 			hub.chunk_manager.loaded_chunks[chunk_pos] = true
 	
 	hub.chunk_manager.current_chunk = Vector2i(0, 0)
+	
+	if MovementUtils and MovementUtils.has_method("update_chunk"):
+		for cx in range(-2, 3):
+			for cy in range(-2, 3):
+				MovementUtils.update_chunk(hub, Vector2i(cx, cy))
+	
 	var spawn_cell : Vector2i = await find_safe_spawn_cell()
 	if spawn_cell == Vector2i(-9999, -9999): return
 	

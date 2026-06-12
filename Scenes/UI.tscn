@@ -1,11 +1,11 @@
 [gd_scene load_steps=10 format=3 uid="uid://dm2gsuvv6qynt"]
 
 [ext_resource type="FontFile" uid="uid://mkvknh57gn2b" path="res://Assets/UI/Fonts/DFVN Pexel Grotesk.otf" id="1_48q88"]
-[ext_resource type="Script" uid="uid://btobmcagan3m3" path="res://Scripts/canvas_layer.gd" id="1_nxvpl"]
+[ext_resource type="Script" uid="uid://btobmcagan3m3" path="res://Scripts/UI/canvas_layer.gd" id="1_nxvpl"]
 [ext_resource type="Texture2D" uid="uid://j7bga73sx0qt" path="res://Assets/UI/Micro Icon Pack/Sprite Sheet (10x10).png" id="2_dewlx"]
-[ext_resource type="Script" uid="uid://b5p60wrlkrqb3" path="res://Scripts/minimap.gd" id="2_hfhsn"]
-[ext_resource type="Texture2D" uid="uid://dn0clldiwpytt" path="res://Assets/UI/minimap_frame_background.png" id="2_nxvpl"]
-[ext_resource type="Texture2D" uid="uid://c63xm1a1lndo7" path="res://Assets/UI/minimap_frame.png" id="4_hfhsn"]
+[ext_resource type="Script" uid="uid://b5p60wrlkrqb3" path="res://Scripts/UI/minimap.gd" id="2_hfhsn"]
+[ext_resource type="Texture2D" uid="uid://dn0clldiwpytt" path="res://Assets/UI/Minimap/minimap_frame_background.png" id="2_nxvpl"]
+[ext_resource type="Texture2D" uid="uid://c63xm1a1lndo7" path="res://Assets/UI/Minimap/minimap_frame.png" id="4_hfhsn"]
 [ext_resource type="Shader" uid="uid://b17lgnx81f4ix" path="res://Resources/god_rays.gdshader" id="7_xjg7p"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_dewlx"]

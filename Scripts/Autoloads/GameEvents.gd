@@ -1,19 +1,45 @@
-# game_events.gd
+# GameEvents.gd
+# Autoload (Singleton). Đăng ký với tên "GameEvents".
+# Bus signal toàn cục. Chỉ khai báo signal ở đây — KHÔNG có logic.
+# Rule: signal tên theo dạng verb_noun hoặc noun_verbed.
 extends Node
 
-# --- MOVEMENT ---
-signal player_entered_water(player)
-signal player_exited_water(player)
-signal player_moved_to_cell(player, cell: Vector2i, elevation: int)
+# ---------------------------------------------------------------------------
+# PLAYER — Di chuyển & Trạng thái
+# ---------------------------------------------------------------------------
+signal player_moved(player: Node2D, cell: Vector2i, elevation: int)
+signal player_entered_water(player: Node2D)
+signal player_exited_water(player: Node2D)
+signal player_died(player: Node2D)
+signal player_took_damage(player: Node2D, amount: int)
 
-# --- COMBAT ---
-signal player_took_damage(player, amount: int)
-signal player_died(player)
+# ---------------------------------------------------------------------------
+# TOOL / INTERACTION
+# ---------------------------------------------------------------------------
+# Bắn khi player bắt đầu/kết thúc 1 hành động (vung cuốc, câu cá, v.v.)
+signal player_action_started(player: Node2D, action: String)
+signal player_action_finished(player: Node2D, action: String)
 
-# --- TOOL ---
-signal player_started_action(player, action_name: String)   # "fish", "scoop"
-signal player_finished_action(player, action_name: String)
+# Signal cho VFX — visual feedback
+signal tile_hit_vfx(global_pos: Vector2, action_type: String, hit_node: Node2D)
 
-# --- STATUS EFFECT ---
-signal status_effect_applied(player, effect_name: String)   # "wet", "cold"
-signal status_effect_removed(player, effect_name: String)
+# Signal cho TileMap — game logic
+signal tile_hit(player: Node2D, cell: Vector2i, action_type: String, damage: int)
+
+# Bắn khi tile/block bị phá hủy hoàn toàn
+signal block_destroyed(cell: Vector2i, world_pos: Vector2, loot_table: LootTable)
+
+# ---------------------------------------------------------------------------
+# INVENTORY
+# ---------------------------------------------------------------------------
+# Bắn khi nhặt item
+signal item_picked_up(item_id: StringName, amount: int)
+
+# Bắn khi inventory thay đổi (UI lắng nghe cái này để refresh)
+signal inventory_changed(inventory: Inventory, slot_index: int)
+
+# ---------------------------------------------------------------------------
+# STATUS EFFECTS
+# ---------------------------------------------------------------------------
+signal status_applied(entity: Node2D, effect_id: StringName)
+signal status_removed(entity: Node2D, effect_id: StringName)

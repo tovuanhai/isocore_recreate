@@ -4,7 +4,7 @@ extends Camera2D
 
 # --- CẤU HÌNH VÙNG CHẾT HÌNH CHỮ NHẬT ---
 # Định hình một cái hộp ảo ở giữa màn hình. Mèo đi trong này cam sẽ im lặng.
-@export var dead_zone_size: Vector2 = Vector2(80.0, 60.0) 
+@export var dead_zone_size: Vector2 = Vector2(60.0, 50.0) 
 @export var follow_speed: float = 6.0      # Tốc độ kéo mượt khi Mèo đi vượt vách hộp
 
 # --- CẤU HÌNH ZOOM SỐ NGUYÊN ---

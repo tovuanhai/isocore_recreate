@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3 uid="uid://dw82ffshcw0we"]
+[gd_scene load_steps=24 format=3 uid="uid://dw82ffshcw0we"]
 
 [ext_resource type="Script" uid="uid://d0v5351220yqk" path="res://Scripts/player.gd" id="1_kyqiw"]
 [ext_resource type="Texture2D" uid="uid://bhr64sqblr6fa" path="res://Assets/Character/Cat_1_spritesheet_free.png" id="2_kyqiw"]
@@ -6,9 +6,11 @@
 [ext_resource type="Script" uid="uid://bt6juh7vue6re" path="res://Scripts/StateManager/state_machine.gd" id="4_dewec"]
 [ext_resource type="Script" uid="uid://k6lq7542oxx2" path="res://Scripts/StateManager/idle_state.gd" id="5_5ixxa"]
 [ext_resource type="Script" uid="uid://cuagkvpwpqarv" path="res://Scripts/StateManager/move_state.gd" id="6_52ee3"]
-[ext_resource type="Script" uid="uid://dldbusgny313l" path="res://Scripts/StateManager/mine_state.gd" id="7_bhhdu"]
+[ext_resource type="Script" uid="uid://dldbusgny313l" path="res://Scripts/StateManager/interact_state.gd" id="7_bhhdu"]
 [ext_resource type="Script" uid="uid://bniq8gtoyg35o" path="res://Scripts/StateManager/swim_state.gd" id="8_bhhdu"]
-[ext_resource type="Script" uid="uid://coja6vutcavte" path="res://Scripts/ManagerScripts/StatusEffectManager.gd" id="9_megsn"]
+[ext_resource type="Script" uid="uid://coja6vutcavte" path="res://Scripts/Autoloads/StatusEffectManager.gd" id="9_megsn"]
+[ext_resource type="Script" uid="uid://dn3vgcldx2bgn" path="res://Scripts/input_handler.gd" id="10_yoq75"]
+[ext_resource type="Script" uid="uid://csckkbmwk5jow" path="res://Scripts/Inventory/PlayerInventoryComponent.gd" id="11_ksbbd"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_kyqiw"]
 radius = 2.23607
@@ -185,9 +187,10 @@ _data = {
 &"walk_ur": SubResource("Animation_5ixxa")
 }
 
-[node name="Player" type="CharacterBody2D"]
+[node name="Player" type="CharacterBody2D" groups=["player"]]
 visibility_layer = 2
 y_sort_enabled = true
+collision_layer = 2
 motion_mode = 1
 script = ExtResource("1_kyqiw")
 
@@ -216,16 +219,25 @@ script = ExtResource("5_5ixxa")
 [node name="Move" type="Node" parent="StateMachine"]
 script = ExtResource("6_52ee3")
 
-[node name="Mine" type="Node" parent="StateMachine"]
-script = ExtResource("7_bhhdu")
-
 [node name="Swim" type="Node" parent="StateMachine"]
 script = ExtResource("8_bhhdu")
+swim_speed_multiplier = 0.75
+
+[node name="Interact" type="Node" parent="StateMachine"]
+script = ExtResource("7_bhhdu")
+
+[node name="StatusEffectManager" type="Node" parent="."]
+script = ExtResource("9_megsn")
+
+[node name="InputHandler" type="Node" parent="."]
+script = ExtResource("10_yoq75")
+
+[node name="OcclusionManager" type="Node" parent="."]
+
+[node name="InventoryComponent" type="Node" parent="."]
+script = ExtResource("11_ksbbd")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 libraries = {
 &"": SubResource("AnimationLibrary_ksbbd")
 }
-
-[node name="StatusEffectManager" type="Node" parent="."]
-script = ExtResource("9_megsn")

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3 uid="uid://dp6aog535umh0"]
+
+[ext_resource type="Texture2D" uid="uid://cuqi2evtutff" path="res://Assets/Tools Asset 16x16/48.png" id="1_ebjtj"]
+[ext_resource type="Script" uid="uid://dm2yqhxvqb5iw" path="res://Scripts/Items/ItemData.gd" id="1_phsam"]
+
+[resource]
+script = ExtResource("1_phsam")
+id = &"dirt"
+display_name = "Dirt"
+description = ""
+icon = ExtResource("1_ebjtj")
+type = 0
+max_stack = 64
+is_stackable = true
+metadata/_custom_type_script = "uid://dm2yqhxvqb5iw"

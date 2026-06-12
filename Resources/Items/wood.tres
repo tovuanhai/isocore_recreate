@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=3 format=3 uid="uid://cmu7ad245s58q"]
+
+[ext_resource type="Texture2D" uid="uid://tdbfdjbgmoxj" path="res://Assets/Tools Asset 16x16/50.png" id="1_6vvvm"]
+[ext_resource type="Script" uid="uid://dm2yqhxvqb5iw" path="res://Scripts/Items/ItemData.gd" id="1_bmdpr"]
+
+[resource]
+script = ExtResource("1_bmdpr")
+id = &"wood"
+display_name = "Wood"
+description = ""
+icon = ExtResource("1_6vvvm")
+type = 0
+max_stack = 64
+is_stackable = true
+metadata/_custom_type_script = "uid://dm2yqhxvqb5iw"

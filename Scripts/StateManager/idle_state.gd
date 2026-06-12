@@ -21,5 +21,6 @@ func update(_delta: float) -> void:
 	if player.current_path.size() > 0:
 		transition_requested.emit("Move")
 	# Hoặc thấy có cục đá ở ngay sát cạnh -> Sang trạng thái Mine
-	elif player.has_pending_mine:
-		transition_requested.emit("Mine")
+	# Nếu có interact đang chờ → chuyển sang Interact
+	elif player.interact_type != "":
+		transition_requested.emit("Interact")
