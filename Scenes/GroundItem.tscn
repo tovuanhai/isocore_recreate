@@ -6,6 +6,8 @@
 radius = 6.0
 
 [node name="GroundItem" type="Area2D"]
+z_index = 1
+y_sort_enabled = true
 collision_layer = 4
 collision_mask = 2
 script = ExtResource("1_4or6o")

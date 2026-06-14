@@ -7,7 +7,7 @@
 script = ExtResource("1_h106x")
 id = &"stone"
 display_name = "Stone"
-description = ""
+description = "Material to craft more complex things"
 icon = ExtResource("1_ws5bn")
 type = 0
 max_stack = 64

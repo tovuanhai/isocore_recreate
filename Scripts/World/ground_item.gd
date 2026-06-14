@@ -11,6 +11,7 @@ const BOUNCE_DAMPING: float = 0.35
 
 var item_id: StringName = ""
 var quantity: int = 1
+var durability: int = -1
 
 var _velocity: Vector2 = Vector2.ZERO
 var _vertical_velocity: float = 0.0
@@ -24,12 +25,14 @@ var _player: Node2D = null
 # ---------------------------------------------------------------------------
 # Setup
 # ---------------------------------------------------------------------------
-func setup(id: StringName, amount: int) -> void:
+func setup(id: StringName, amount: int, dur: int = -1) -> void:
 	item_id = id
 	quantity = amount
+	durability = dur # <-- Lưu lại độ bền thực tế vào biến của GroundItem
+	
 	_update_sprite()
 	_launch()
-	# Tìm player qua group thay vì dùng Area2D signal
+	
 	await get_tree().process_frame
 	var players = get_tree().get_nodes_in_group("player")
 	if players.size() > 0:
@@ -100,8 +103,8 @@ func _process_physics(delta: float) -> void:
 			_vertical_velocity = 0.0
 			_on_ground = true
 
-	# Z-index theo vị trí Y để nằm đúng depth
-	z_index = int(global_position.y / 10)
+	## Z-index theo vị trí Y để nằm đúng depth
+	#z_index = int(global_position.y / 10)
 
 func _process_magnet(delta: float, target_pos: Vector2) -> void:
 	global_position = global_position.move_toward(target_pos, MAGNET_SPEED * delta)
@@ -119,7 +122,10 @@ func _pickup(target: Node2D) -> void:
 	var inv: Inventory = target.get_inventory()
 	if inv == null:
 		return
-	var remainder = inv.add_item(ItemRegistry.get_item(item_id), quantity)
+		
+	# 🎯 ĐÃ SỬA: Truyền thêm biến durability đang lưu dưới đất vào lại túi đồ
+	var remainder = inv.add_item(ItemRegistry.get_item(item_id), quantity, durability)
+	
 	if remainder == 0:
 		GameEvents.item_picked_up.emit(item_id, quantity)
 		queue_free()

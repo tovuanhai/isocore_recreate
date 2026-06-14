@@ -4,7 +4,7 @@
 [ext_resource type="Script" uid="uid://dhqx1aw1r1gr5" path="res://Scripts/tile_map.gd" id="1_p70al"]
 [ext_resource type="Resource" uid="uid://llqk107svpil" path="res://Resources/world_config.tres" id="2_kn06e"]
 [ext_resource type="PackedScene" uid="uid://dw82ffshcw0we" path="res://Scenes/Player.tscn" id="3_5nsto"]
-[ext_resource type="PackedScene" uid="uid://dm2gsuvv6qynt" path="res://Scenes/UI.tscn" id="4_gjpho"]
+[ext_resource type="PackedScene" uid="uid://dm2gsuvv6qynt" path="res://Scenes/UI/UI.tscn" id="4_gjpho"]
 [ext_resource type="Script" uid="uid://cd3iflck5lh7q" path="res://Scripts/world_generator.gd" id="4_kn06e"]
 [ext_resource type="Script" uid="uid://d31bfp0sh33xx" path="res://Scripts/chunk_manager.gd" id="5_7yo87"]
 [ext_resource type="Script" uid="uid://c6vyy7vvq7gcb" path="res://Scripts/spawner.gd" id="6_ti1bm"]
@@ -41,6 +41,10 @@ script = ExtResource("7_op4cu")
 
 [node name="Player" parent="." instance=ExtResource("3_5nsto")]
 position = Vector2(-16, -7)
+
+[node name="PlayerInventoryComponent" parent="Player" index="6"]
+slot_count = null
+hotbar_size = null
 
 [node name="CanvasLayer" parent="." instance=ExtResource("4_gjpho")]
 

@@ -28,8 +28,9 @@ enum ItemType {
 @export var max_stack: int = 64           # Tool/Armor thường để 1
 @export var is_stackable: bool = true
 
-# --- Drop vật lý ---
-@export var drop_scene: PackedScene = null # Override per-item nếu muốn drop scene riêng
+# --- Loại này dùng cho các Block/Hòm có thể đặt xuống đất ---
+# Trỏ thẳng tới cái Scene vật lý sẽ sinh ra ngoài Map (Ví dụ: Chest.tscn, Torch.tscn)
+@export var object_scene: PackedScene = null
 
 # Dùng để so sánh nhanh
 func equals(other: ItemData) -> bool:

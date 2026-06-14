@@ -43,3 +43,13 @@ signal inventory_changed(inventory: Inventory, slot_index: int)
 # ---------------------------------------------------------------------------
 signal status_applied(entity: Node2D, effect_id: StringName)
 signal status_removed(entity: Node2D, effect_id: StringName)
+
+# Bắn khi có ai đó click chuột trái vào một ô UI túi đồ bất kỳ
+signal ui_slot_clicked(inventory: Inventory, slot_index: int)
+
+# Bắn khi chuột rà vào một ô
+signal ui_slot_hovered(inventory: Inventory, slot_index: int)
+# Bắn khi chuột lách ra khỏi ô
+signal ui_slot_unhovered()
+# Bắn tín hiệu khi người chơi muốn vứt đồ ra đất
+signal drop_item_requested(item_data: ItemData, quantity: int, durability: int)

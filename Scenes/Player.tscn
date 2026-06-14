@@ -234,7 +234,7 @@ script = ExtResource("10_yoq75")
 
 [node name="OcclusionManager" type="Node" parent="."]
 
-[node name="InventoryComponent" type="Node" parent="."]
+[node name="PlayerInventoryComponent" type="Node" parent="."]
 script = ExtResource("11_ksbbd")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]

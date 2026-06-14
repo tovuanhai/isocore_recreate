@@ -35,17 +35,41 @@ func enter(_msg := {}) -> void:
 		execute_interaction()
 
 func execute_interaction() -> void:
-	# Tính damage dựa vào tool đang cầm
-	# Sau này thay "wooden_shovel" bằng player.get_equipped_item()
 	var damage = 1
-	var current_tool = "wooden_shovel"
+	var inv_comp = player.get_node_or_null("PlayerInventoryComponent")
 
-	if player.interact_type == "mine_ground":
-		if current_tool == "wooden_shovel": damage = 2
-		elif current_tool == "wooden_pickaxe": damage = 1
-	elif player.interact_type == "mine_object":
-		if current_tool == "wooden_pickaxe": damage = 2
-		elif current_tool == "wooden_shovel": damage = 1
+	# 🎯 NÂNG CẤP DỮ LIỆU ĐỘNG: Bốc đồ thật từ tay Mèo ra để tính toán
+	if inv_comp:
+		var slot = inv_comp.get_equipped_slot()
+		
+		# Kiểm tra xem tay có đang cầm đồ không, và đồ đó có phải là Công Cụ (ToolData) không
+		if slot and not slot.is_empty() and slot.item is ToolData:
+			var tool = slot.item as ToolData
+
+			# 1. ĐỐI CHIẾU CÔNG CỤ & ĐỊA HÌNH
+			# Đào đất -> Cần Xẻng
+			if player.interact_type == "mine_ground" and tool.tool_category == ToolData.ToolCategory.SHOVEL:
+				damage = tool.base_damage
+			# Đập đá -> Cần Cuốc
+			elif player.interact_type == "mine_object" and tool.tool_category == ToolData.ToolCategory.PICKAXE:
+				damage = tool.base_damage
+			else:
+				# Dùng sai dụng cụ (VD: Lấy xẻng đi đập đá) -> Phạt sát thương về 1
+				damage = 1
+
+			# 2. TRỪ ĐỘ BỀN VÀ XỬ LÝ GÃY ĐỒ
+			# Công cụ nào có độ bền (durability > 0) thì mới trừ
+			if slot.durability > 0:
+				slot.durability -= 1
+				
+				# Nếu trừ xong mà bằng 0 tức là cuốc đã gãy
+				if slot.durability <= 0:
+					slot.clear() # Xóa sạch item khỏi ô Hotbar này
+				
+				# 3. KÍCH HOẠT UI TỰ ĐỘNG CẬP NHẬT
+				# Bắn loa báo cho UI biết cái ô này vừa bị đổi máu/gãy để nó vẽ lại
+				inv_comp.inventory.changed.emit(inv_comp.equipped_slot_index)
+
 
 	# Emit đúng format: (player: Node2D, cell: Vector2i, action_type: String, damage: int)
 	GameEvents.tile_hit.emit(player, player.interact_tile, player.interact_type, damage)

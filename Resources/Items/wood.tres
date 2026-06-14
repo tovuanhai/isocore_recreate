@@ -7,7 +7,7 @@
 script = ExtResource("1_bmdpr")
 id = &"wood"
 display_name = "Wood"
-description = ""
+description = "Material to craft more complex things"
 icon = ExtResource("1_6vvvm")
 type = 0
 max_stack = 64

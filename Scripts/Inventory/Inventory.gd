@@ -19,7 +19,8 @@ func _init(slot_count: int) -> void:
 # ---------------------------------------------------------------------------
 # Thêm item — trả về số lượng còn dư (0 = thêm hết)
 # ---------------------------------------------------------------------------
-func add_item(item: ItemData, amount: int = 1) -> int:
+# 🎯 ĐÃ SỬA: Thêm tham số custom_durability để ghi nhớ độ bền khi nhặt đồ từ đất
+func add_item(item: ItemData, amount: int = 1, custom_durability: int = -1) -> int:
 	var remainder = amount
 
 	# Pass 1: Ưu tiên lấp đầy slot đang có item cùng loại (chỉ stackable)
@@ -35,6 +36,11 @@ func add_item(item: ItemData, amount: int = 1) -> int:
 	for i in size:
 		if slots[i].is_empty():
 			remainder = slots[i].add(item, remainder)
+			
+			# 🎯 ĐÃ THÊM: Nếu có độ bền tùy chỉnh (như đồ cũ rớt ra đất), ép đè vào slot mới mở
+			if custom_durability >= 0:
+				slots[i].durability = custom_durability
+				
 			changed.emit(i)
 			if remainder == 0:
 				return 0

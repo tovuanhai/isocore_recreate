@@ -83,7 +83,7 @@ func _process(_delta: float) -> void:
 # ============================================================
 
 func get_inventory() -> Inventory:
-	return $InventoryComponent.get_inventory()
+	return $PlayerInventoryComponent.get_inventory()
 
 
 # ============================================================
