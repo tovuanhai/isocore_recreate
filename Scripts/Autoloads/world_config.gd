@@ -5,7 +5,7 @@ extends Resource
 # --- CHUNK & WORLD ---
 @export var chunk_size: int = 16
 @export var render_distance: int = 2
-@export var max_elevation: int = 20
+@export var max_elevation: int = 40
 
 # --- TERRAIN ---
 @export var cliff_height: int = 6
@@ -23,7 +23,7 @@ extends Resource
 @export var object_scenes: Array[String] = ["Grass_Tree", "rock1", "Snow_Tree"]
 
 # --- WORLD GENERATOR (octave frequencies được set cứng trong code) ---
-@export var biome_noise_frequency: float = 0.015
+@export var biome_noise_frequency: float = 0.002
 @export var density_noise_frequency: float = 0.035
 
 # --- SPAWN DENSITY ---

@@ -50,29 +50,27 @@ func _handle_right_click(player_cell: Vector2i, clicked_tile: Vector2i, data: Di
 	
 	var equipped_item = inventory_comp.get_equipped_item()
 	
-	# 🎯 CHỐT CHẶN LỖI NIL: Chỉ kiểm tra "type" nếu tay đang CÓ CẦM ĐỒ
 	if equipped_item != null:
 		
-		# 1. Đang cầm cái Hòm/Đuốc (PLACEABLE) -> Câm lặng, nhường cho BuilderComponent lo!
 		if equipped_item.type == ItemData.ItemType.PLACEABLE:
 			return 
 
-		# 2. Đang cầm Công cụ (TOOL) -> Được phép đào/đắp
 		if equipped_item.type == ItemData.ItemType.TOOL:
-			_execute_ground_interaction(player_cell, clicked_tile, data)
-			return
-
-	# Trường hợp tay không (equipped_item == null) hoặc cầm Quả dâu, Khúc gỗ...
-	# Tạm thời cũng cho phép tương tác đất cơ bản, hoặc ông có thể xóa dòng dưới nếu tay không cấm đào đất
-	_execute_ground_interaction(player_cell, clicked_tile, data)
-
+			var tool = equipped_item as ToolData
+			
+			if tool and tool.tool_category == ToolData.ToolCategory.SHOVEL:
+				_execute_ground_interaction(player_cell, clicked_tile, data)
+				return
+			else:
+				return
+	
 
 # 🎯 ĐÃ XÓA TÀN DƯ HƯ VÔ: Không còn logic Shift để đắp đất miễn phí nữa
 func _execute_ground_interaction(player_cell: Vector2i, clicked_tile: Vector2i, data: Dictionary) -> void:
 	var is_land = data.get("z", 0) > player.tile_map_node.water_level
 	var no_object = data.get("object", "none") == "none"
 	
-	# Chỉ cho phép đào nếu click vào đất liền và không bị vướng object nào khác
+	
 	if is_land and no_object:
 		_try_interact(player_cell, clicked_tile, "mine_ground")
 

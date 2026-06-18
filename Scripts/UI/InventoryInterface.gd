@@ -11,6 +11,8 @@ extends CanvasLayer
 @onready var chest_grid = %ChestGrid
 @onready var player_grid_in_chest = %PlayerGridInChest
 
+# 🎯 ĐÃ THÊM: Biến lưu trữ dữ liệu của Hòm đồ và trạng thái mở hòm
+var _active_chest_inventory: Inventory = null
 var is_chest_open: bool = false
 
 var _cached_inventory: Inventory = null
@@ -101,6 +103,48 @@ func _on_ui_slot_unhovered() -> void:
 func _on_ui_slot_clicked(inventory: Inventory, slot_idx: int) -> void:
 	var clicked_slot = inventory.get_slot(slot_idx)
 	if clicked_slot == null: return
+	
+	# ===========================================================================
+	# 🎯 BẮT ĐẦU: LOGIC CỦA QUICK TRANSFER (SHIFT + CLICK CHUỘT TRÁI)
+	# ===========================================================================
+	if Input.is_key_pressed(KEY_SHIFT):
+		# Chỉ cho phép chuyển nhanh nếu hòm đồ thực sự đang mở
+		if not is_chest_open or _active_chest_inventory == null or _cached_inventory == null:
+			return
+		
+		if clicked_slot.is_empty(): 
+			return
+			
+		# 1. Xác định Túi đồ Đích (Target) dựa trên Túi đồ Nguồn (Source) vừa click
+		var target_inv: Inventory = null
+		if inventory == _cached_inventory:
+			target_inv = _active_chest_inventory # Bấm vào túi người -> Đích là Hòm
+		else:
+			target_inv = _cached_inventory       # Bấm vào hòm -> Đích là túi người
+			
+		# 2. Lấy thông số món đồ chuẩn bị chuyển đi
+		var item = clicked_slot.item
+		var qty = clicked_slot.quantity
+		var dur = clicked_slot.durability
+		
+		# 3. Thử bắn món đồ sang túi đích bằng hàm add_item thần thánh đã viết sẵn
+		# Hàm này sẽ tự động tìm ô trống, tự gom cụm, và tự update UI của túi đích luôn!
+		var remainder = target_inv.add_item(item, qty, dur)
+		
+		# 4. Cập nhật lại số lượng ở túi nguồn dựa trên số lượng còn dư (remainder)
+		if remainder <= 0:
+			clicked_slot.clear() # Đã chuyển đi thành công 100%
+		else:
+			clicked_slot.quantity = remainder # Túi đích bị đầy, chỉ chuyển được một phần
+			
+		# 5. Phát tín hiệu bắt túi nguồn tự vẽ lại ô UI của nó
+		inventory.changed.emit(slot_idx)
+		
+		# Kết thúc xử lý, không chạy xuống phần logic kéo thả ở dưới nữa
+		return
+	# ===========================================================================
+	# 🎯 KẾT THÚC: LOGIC QUICK TRANSFER
+	# ===========================================================================
 
 	if not floating_slot.is_empty() and not clicked_slot.is_empty() \
 	and floating_slot.item.id == clicked_slot.item.id and clicked_slot.item.is_stackable:
@@ -237,11 +281,18 @@ func _on_chest_opened(chest_inv: Inventory, player_inv: Inventory) -> void:
 		
 	if player_grid_in_chest.has_method("set_inventory"):
 		player_grid_in_chest.set_inventory(player_inv)
-		
+	
+	# 🎯 ĐÃ THÊM: Lưu lại cục dữ liệu hòm để dùng cho Shift + Click
+	_active_chest_inventory = chest_inv
+	is_chest_open = true
 	# Khóa nhân vật không cho di chuyển/đập đá lúc đang lúi húi mở hòm
 	get_tree().paused = true
 
 func close_chest() -> void:
 	chest_interface.hide()
 	is_chest_open = false
+	
+	_active_chest_inventory = null
+	is_chest_open = false
+	
 	get_tree().paused = false # Mở khóa cho game chạy tiếp

@@ -23,7 +23,6 @@ func init(z: int, cliff_h: int) -> void:
 # ==============================================================================
 func _on_chest_interacted() -> void:
 	var chest_inv_comp = get_node_or_null("ObjectInventoryComponent")
-	print("Connections are OK!")
 	# Tìm con Mèo để lấy túi đồ của nó ra đối chiếu
 	var players = get_tree().get_nodes_in_group("player")
 	if players.size() > 0 and chest_inv_comp:

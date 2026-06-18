@@ -23,10 +23,14 @@ func _ready() -> void:
 	# TEST: Tự động nhét hòm vào túi
 	var test_chest = load("res://Resources/Items/wooden_chest.tres")
 	var test_pickaxe = load("res://Resources/Items/stone_pickaxe.tres")
+	var test_shovel = load("res://Resources/Items/wooden_shovel.tres")
+	if test_shovel:
+		inventory.add_item(test_shovel, 1)
 	if test_chest:
 		inventory.add_item(test_chest, 1)
 	if test_pickaxe:
 		inventory.add_item(test_pickaxe, 1)
+
 
 # ---------------------------------------------------------------------------
 # Giao diện truy xuất dữ liệu

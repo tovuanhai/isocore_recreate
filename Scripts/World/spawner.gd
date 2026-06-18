@@ -21,7 +21,10 @@ func render_voxel_column(pos_2d: Vector2i) -> void:
 				current_biome = data["biome"]
 				
 			var tile_options = hub.biomes[current_biome]
-			var noise_seed = hub.world_generator.biome_noise.seed
+			
+			# 🎯 ĐÃ SỬA: Lấy seed từ density_noise thay vì biome_noise đã bị xóa
+			var noise_seed = hub.world_generator.density_noise.seed
+			
 			var dot_product = (pos_2d.x * 12.9898) + (pos_2d.y * 78.233) + noise_seed
 			var fraction = abs(sin(dot_product) * 43758.5453) - floor(abs(sin(dot_product) * 43758.5453))
 			var chosen_tile = tile_options[int(fraction * tile_options.size())]
@@ -61,6 +64,7 @@ func spawn_object_scene(cell: Vector2i, object_name: String, z: int) -> void:
 
 	hub.spawned_objects[cell] = obj
 
+
 func unload_chunk_visuals(chunk_pos: Vector2i) -> void:
 	var start_x = chunk_pos.x * hub.chunk_size
 	var start_y = chunk_pos.y * hub.chunk_size
@@ -77,6 +81,7 @@ func unload_chunk_visuals(chunk_pos: Vector2i) -> void:
 				if is_instance_valid(hub.spawned_objects[cell]):
 					hub.spawned_objects[cell].queue_free()
 				hub.spawned_objects.erase(cell)
+
 
 func setup_safe_spawn() -> void:
 	if not hub.player: return
@@ -96,7 +101,7 @@ func setup_safe_spawn() -> void:
 			for cy in range(-2, 3):
 				MovementUtils.update_chunk(hub, Vector2i(cx, cy))
 	
-	var spawn_cell : Vector2i = await find_safe_spawn_cell()
+	var spawn_cell : Vector2i = find_safe_spawn_cell()
 	if spawn_cell == Vector2i(-9999, -9999): return
 	
 	var elev = hub.get_cell_elevation(spawn_cell)
@@ -137,4 +142,4 @@ func find_safe_spawn_cell() -> Vector2i:
 				best_score = score
 				best_cell = cell
 	
-	return best_cell  # Bỏ await
+	return best_cell

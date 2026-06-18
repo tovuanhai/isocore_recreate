@@ -52,17 +52,22 @@ func execute_interaction() -> void:
 			elif player.interact_type == "mine_object" and tool.tool_category == ToolData.ToolCategory.PICKAXE:
 				damage = tool.base_damage
 			else:
-				damage = 1
+				# 🎯 Cầm sai Tool (Ví dụ cầm Xẻng đi đập Đá) -> Không trừ máu!
+				damage = 1 
 
-			# TRỪ ĐỘ BỀN
-			if slot.durability > 0:
+			# TRỪ ĐỘ BỀN (Chỉ trừ khi đập đúng đồ và sinh ra damage)
+			if slot.durability > 0 and damage > 0:
 				slot.durability -= 1
 				if slot.durability <= 0:
 					slot.clear()
 				inv_comp.inventory.changed.emit(inv_comp.equipped_slot_index)
+		else:
+			# 🎯 Tay không -> Không có sát thương đào đất hay đập đá
+			damage = 1
 
-	# 🎯 THAY VÌ BẮN EVENT NGAY, CHUYỂN QUA TRẠM PHÂN LUỒNG
-	_perform_hit(player.interact_tile, damage)
+	# Chỉ gọi hàm phá hủy nếu thực sự tạo ra Sát thương
+	if damage > 0:
+		_perform_hit(player.interact_tile, damage)
 
 	await get_tree().create_timer(0.15).timeout
 	if current_state_active():

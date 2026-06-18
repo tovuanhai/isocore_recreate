@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="ToolData" load_steps=3 format=3 uid="uid://o1tdx64c7fr"]
+
+[ext_resource type="Script" uid="uid://clqbp6c2gup6k" path="res://Scripts/Items/ToolData.gd" id="1_r8lsq"]
+[ext_resource type="Texture2D" uid="uid://btq8mc5n1hpxp" path="res://Assets/Tools Asset 16x16/02.png" id="1_vu1xg"]
+
+[resource]
+script = ExtResource("1_r8lsq")
+tool_category = 1
+base_damage = 2
+swing_speed = 1.0
+tier = 1
+max_durability = 100
+id = &"wooden_shovel"
+display_name = "Wooden Shovel"
+description = "A shovel made of wood"
+icon = ExtResource("1_vu1xg")
+type = 2
+max_stack = 64
+is_stackable = false
+metadata/_custom_type_script = "uid://clqbp6c2gup6k"
