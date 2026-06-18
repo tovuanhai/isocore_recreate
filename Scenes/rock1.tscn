@@ -1,8 +1,9 @@
-[gd_scene load_steps=5 format=3 uid="uid://dots4a31oqmyy"]
+[gd_scene load_steps=6 format=3 uid="uid://dots4a31oqmyy"]
 
 [ext_resource type="Script" uid="uid://bixptm7w4qh08" path="res://Scripts/objects.gd" id="1_8kkub"]
 [ext_resource type="Texture2D" uid="uid://opjde3sqhxan" path="res://Assets/Tileset/Pixel Isometric 16x16/Tiles2.png" id="1_tmokt"]
 [ext_resource type="Texture2D" uid="uid://dtfvatxcys261" path="res://Assets/Tileset/NormalMap/Tiles2_normal.png" id="2_b6b3p"]
+[ext_resource type="PackedScene" uid="uid://daojqpic6bj2l" path="res://Scenes/Components/HealthDropComponent.tscn" id="4_23x0m"]
 
 [sub_resource type="CanvasTexture" id="CanvasTexture_8kkub"]
 diffuse_texture = ExtResource("1_tmokt")
@@ -31,3 +32,8 @@ region_rect = Rect2(0, 0, 16, 16)
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="."]
 polygon = PackedVector2Array(0, -4, 8, 0, 0, 4, -8, 0)
+
+[node name="HealthDropComponent" parent="." instance=ExtResource("4_23x0m")]
+max_health = 2
+drop_item_id = "stone"
+drop_amount = 3

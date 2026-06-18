@@ -4,7 +4,18 @@ extends Label
 @onready var player = $"../../Player"
 @onready var tile_map = $"../../TileMap"
 
+func _ready():
+	visible = false
+
+func _input(event):
+	#if event is InputEventAction and event.pressed and event.is_action_pressed("debug"):
+	if event.is_action_pressed("debug"):
+		visible = !visible
+	
+
 func _process(_delta: float) -> void:
+	if not visible:
+		return
 	# 1. Hiển thị FPS
 	var debug_text = "FPS: %d\n" % Engine.get_frames_per_second()
 	debug_text += "------------------------\n"
@@ -18,10 +29,10 @@ func _process(_delta: float) -> void:
 		var p_elev = player.current_elevation
 		
 		debug_text += "PLAYER:\n"
-		debug_text += "- Tọa độ thực: (%.1f, %.1f)\n" % [p_pos.x, p_pos.y]
+		#debug_text += "- Tọa độ thực: (%.1f, %.1f)\n" % [p_pos.x, p_pos.y]
 		debug_text += "- Vị trí ô lưới: [X: %d | Y: %d | Z: %d]\n" % [p_cell.x, p_cell.y, p_elev]
 		# 🎯 DÒNG MỚI: Truy xuất trực tiếp z_index của con mèo
-		debug_text += "- Z-Index: %d\n" % player.z_index 
+		#debug_text += "- Z-Index: %d\n" % player.z_index 
 		debug_text += "------------------------\n"
 		
 		# 3. LẤY THÔNG TIN Ô GẠCH ĐANG HOVER
@@ -39,7 +50,7 @@ func _process(_delta: float) -> void:
 			if hover_z >= 0 and hover_z < tile_map.ground_layers.size():
 				layer_z_index = tile_map.ground_layers[hover_z].z_index
 				
-			debug_text += "- Z-Index Layer: %d" % layer_z_index
+			#debug_text += "- Z-Index Layer: %d" % layer_z_index
 		else:
 			# Nếu chuột chỉ ra ngoài khoảng không vũ trụ
 			debug_text += "- Đang chỉ vào: Hư vô (Void)"

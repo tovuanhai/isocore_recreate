@@ -48,13 +48,16 @@ func spawn_object_scene(cell: Vector2i, object_name: String, z: int) -> void:
 
 	var obj = scene_res.instantiate()
 	# Ném thẳng ra Giám Đốc (tile_map) để chung mâm Y-Sort với Player
-	hub.add_child.call_deferred(obj)
-	
-	# Khóa cứng va chạm vào đúng tâm ô lưới
+	# Dùng add_child sync để _ready() chạy ngay, set_cell mới gọi được
+	hub.add_child(obj)
 	obj.position = hub.base_ground.map_to_local(cell)
 
 	if obj.has_method("init"):
 		obj.call("init", z, hub.cliff_height)
+
+	# Cho object biết cell của mình — chest_object dùng cái này để nhận damage đúng chỗ
+	if obj.has_method("set_cell"):
+		obj.call("set_cell", cell)
 
 	hub.spawned_objects[cell] = obj
 

@@ -1,0 +1,30 @@
+[gd_scene load_steps=6 format=3 uid="uid://ct6ojb147opt5"]
+
+[ext_resource type="Texture2D" uid="uid://opjde3sqhxan" path="res://Assets/Tileset/Pixel Isometric 16x16/Tiles2.png" id="1_51b15"]
+[ext_resource type="Script" uid="uid://bixptm7w4qh08" path="res://Scripts/objects.gd" id="1_q56uu"]
+[ext_resource type="PackedScene" uid="uid://daojqpic6bj2l" path="res://Scenes/Components/HealthDropComponent.tscn" id="3_kffvw"]
+[ext_resource type="PackedScene" uid="uid://ck4gak41dj6ke" path="res://Scenes/Components/ObjectInventoryComponent.tscn" id="4_ot852"]
+[ext_resource type="PackedScene" uid="uid://ddrfimlsd4hob" path="res://Scenes/Components/interact_component.tscn" id="5_14e28"]
+
+[node name="ChestObject" type="StaticBody2D"]
+collision_mask = 2
+script = ExtResource("1_q56uu")
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="."]
+polygon = PackedVector2Array(-7, 0, 0, 4, 7, 0, 0, -4)
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("1_51b15")
+centered = false
+offset = Vector2(-8, -11)
+region_enabled = true
+region_rect = Rect2(64, 32, 16, 16)
+
+[node name="HealthDropComponent" parent="." instance=ExtResource("3_kffvw")]
+drop_item_id = "wooden_chest"
+
+[node name="ObjectInventoryComponent" parent="." instance=ExtResource("4_ot852")]
+
+[node name="InteractComponent" parent="." instance=ExtResource("5_14e28")]
+
+[connection signal="interacted" from="InteractComponent" to="." method="_on_interact_component_interacted"]

@@ -47,21 +47,9 @@ var ground_layers: Array[TileMapLayer] = []
 var object_layers: Array[TileMapLayer] = []
 var spawned_objects: Dictionary = {}
 var world_data: Dictionary = {}
-var tile_durability: Dictionary = {}
-var block_max_health = {
-	"rock1": 3,
-	"Grass_Tree": 4,
-	"Snow_Tree": 4,
-	"ground": 2
-}
 
-# Map object_id -> item_id trong ItemRegistry
-# Muốn thêm drop mới: chỉ cần thêm 1 dòng vào đây
-const OBJECT_DROP_TABLE: Dictionary = {
-	"rock1":      "stone",
-	"Grass_Tree": "wood",
-	"Snow_Tree":  "wood",
-}
+# 🎯 ĐÃ SẠCH SẼ: Chỉ còn lưu máu của ĐẤT (Vì đất không có Component)
+var ground_durability: Dictionary = {} 
 
 
 func _ready() -> void:
@@ -158,14 +146,16 @@ func _refresh_astar(cell: Vector2i) -> void:
 # INTERACT HANDLER
 # ============================================================
 
-# Nhận từ GameEvents.tile_hit(player, cell, action_type, damage)
+# 🎯 ĐÃ ĐƯỢC LÀM SẠCH VÀ TỐI ƯU
 func _on_player_interact(_player: Node2D, cell: Vector2i, action_type: String, damage: int) -> void:
 	if not world_data.has(cell): return
 
+	# 1. Tính toán Tọa độ Mắt nhìn (Để bắn bụi VFX)
 	var cell_local = base_ground.map_to_local(cell)
-	var cell_global = base_ground.to_global(cell_local)
-	cell_global.y -= (world_data[cell]["z"] * cliff_height)
+	var vfx_global = base_ground.to_global(cell_local)
+	vfx_global.y -= (world_data[cell]["z"] * cliff_height)
 
+	# 2. Xử lý logic ĐẮP ĐẤT (Build Ground)
 	if action_type == "build_ground":
 		var data = world_data[cell]
 		if data["z"] >= max_elevation or data.get("object", "none") != "none": return
@@ -179,36 +169,24 @@ func _on_player_interact(_player: Node2D, cell: Vector2i, action_type: String, d
 
 		ground_layers[new_z].set_cell(cell, 0, tile_to_set)
 
-		# VFX cho build
-		GameEvents.tile_hit_vfx.emit(cell_global, "mine_ground", null)
+		GameEvents.tile_hit_vfx.emit(vfx_global, "mine_ground", null)
 		_refresh_astar(cell)
 		return
 
-	var hp_key = str(cell) + action_type
+	# 3. Xử lý logic ĐÀO ĐẤT (Mine Ground)
+	# Máu của Object giờ do HealthDropComponent tự quản lý, TileMap chỉ quản lý máu Đất.
+	if action_type == "mine_ground":
+		var hp_key = str(cell)
+		if not ground_durability.has(hp_key):
+			ground_durability[hp_key] = 2 # Đất cần 2 hit để vỡ
+			
+		ground_durability[hp_key] -= damage
+		
+		# Bắn VFX bụi đất
+		GameEvents.tile_hit_vfx.emit(vfx_global, action_type, null)
 
-	if not tile_durability.has(hp_key):
-		var default_hp = 3
-		if action_type == "mine_object":
-			default_hp = block_max_health.get(world_data[cell].get("object", "none"), 3)
-		elif action_type == "mine_ground":
-			default_hp = block_max_health.get("ground", 2)
-		tile_durability[hp_key] = default_hp
-
-	tile_durability[hp_key] -= damage
-
-	# Lấy node vật thể để VFX shake
-	var hit_node: Node2D = null
-	if action_type == "mine_object" and spawned_objects.has(cell):
-		hit_node = spawned_objects[cell]
-
-	# Bắn VFX signal — vfx_manager lắng nghe cái này
-	GameEvents.tile_hit_vfx.emit(cell_global, action_type, hit_node)
-
-	if tile_durability[hp_key] <= 0:
-		tile_durability.erase(hp_key)
-		if action_type == "mine_object":
-			_destroy_object_at_cell(cell)
-		elif action_type == "mine_ground":
+		if ground_durability[hp_key] <= 0:
+			ground_durability.erase(hp_key)
 			_destroy_ground_at_cell(cell)
 
 
@@ -216,50 +194,25 @@ func _on_player_interact(_player: Node2D, cell: Vector2i, action_type: String, d
 # DESTROY HANDLERS
 # ============================================================
 
-func _destroy_object_at_cell(cell: Vector2i) -> void:
-	if world_data.has(cell):
-		var obj_id = world_data[cell].get("object", "none")
-
-		var cell_local = base_ground.map_to_local(cell)
-		var cell_global = base_ground.to_global(cell_local)
-		cell_global.y -= (world_data[cell]["z"] * cliff_height)
-
-		if OBJECT_DROP_TABLE.has(obj_id):
-			var drop_count = randi_range(1, 3)
-			for _i in drop_count:
-				LootSpawner.spawn_item(OBJECT_DROP_TABLE[obj_id], 1, cell_global)
-
-		world_data[cell]["object"] = "none"
-
-	if spawned_objects.has(cell):
-		if is_instance_valid(spawned_objects[cell]):
-			spawned_objects[cell].queue_free()
-		spawned_objects.erase(cell)
-
-	for h in range(max_elevation + 1):
-		if h < object_layers.size():
-			object_layers[h].set_cell(cell, -1)
-
-	_refresh_astar(cell)
-
-
 func _destroy_ground_at_cell(cell: Vector2i) -> void:
 	var data = world_data[cell]
 	var current_z = data["z"]
 
 	if current_z <= water_level: return
 
-	var cell_local = base_ground.map_to_local(cell)
-	var cell_global = base_ground.to_global(cell_local)
-	cell_global.y -= (current_z * cliff_height)
+	# Tọa độ toán học gốc để rớt đồ chuẩn xác hít Y-Sort
+	var pure_cell_global = base_ground.to_global(base_ground.map_to_local(cell))
 
+	# Sinh 1-3 cục Dirt
 	var drop_count = randi_range(1, 3)
 	for _i in drop_count:
-		LootSpawner.spawn_item("dirt", 1, cell_global)
+		LootSpawner.spawn_item("dirt", 1, pure_cell_global)
 
+	# Dọn dẹp Layer
 	ground_layers[current_z].set_cell(cell, -1)
 	data["z"] -= 1
 
+	# Biến thành nước nếu đào thủng đáy
 	if data["z"] <= water_level:
 		data["is_water"] = true
 		data["biome"] = "dirt"

@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=5 format=3 uid="uid://c4stxf1v80ehs"]
+
+[ext_resource type="Script" uid="uid://dm2yqhxvqb5iw" path="res://Scripts/Items/ItemData.gd" id="1_k02px"]
+[ext_resource type="Texture2D" uid="uid://opjde3sqhxan" path="res://Assets/Tileset/Pixel Isometric 16x16/Tiles2.png" id="1_qqhgn"]
+[ext_resource type="PackedScene" uid="uid://ct6ojb147opt5" path="res://Scenes/Objects/ChestObject.tscn" id="2_7nt1f"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_7nt1f"]
+atlas = ExtResource("1_qqhgn")
+region = Rect2(64, 32, 16, 16)
+
+[resource]
+script = ExtResource("1_k02px")
+id = &"wooden_chest"
+display_name = "Wooden Chest"
+description = "A chest made of wood, can store up to 20 slots"
+icon = SubResource("AtlasTexture_7nt1f")
+type = 5
+max_stack = 64
+is_stackable = true
+object_scene = ExtResource("2_7nt1f")
+metadata/_custom_type_script = "uid://dm2yqhxvqb5iw"

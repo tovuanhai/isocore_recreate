@@ -103,9 +103,14 @@ func remove_cell(cell: Vector2i) -> void:
 func _is_walkable(tile_map, cell: Vector2i) -> bool:
 	if not tile_map.world_data.has(cell): return false
 	var data = tile_map.world_data[cell]
-	# Nước: walkable ở mặt trên (water_level), không bị block bởi obstacle
+	
 	if data.get("is_water", false): return true
-	# Đất: không có obstacle
+	
+	# 🎯 ĐÃ THÊM: Quét bằng Data thuần! Nếu ô này có gán Object (như cái hòm) thì cấm đi ngay lập tức!
+	if data.get("object", "none") != "none":
+		return false
+		
+	# Đất: không có obstacle (Check bằng vật lý để phòng hờ)
 	var elev = data["z"]
 	return not tile_map.has_obstacle(cell, elev)
 

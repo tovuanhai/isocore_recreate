@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://bixptm7w4qh08" path="res://Scripts/objects.gd" id="1_e3d2i"]
 [ext_resource type="Texture2D" uid="uid://opjde3sqhxan" path="res://Assets/Tileset/Pixel Isometric 16x16/Tiles2.png" id="2_trtam"]
 [ext_resource type="Texture2D" uid="uid://dtfvatxcys261" path="res://Assets/Tileset/NormalMap/Tiles2_normal.png" id="3_hjtow"]
-[ext_resource type="Texture2D" uid="uid://xbyynmfrweiq" path="res://Assets/Prototype_Character/light_source.png" id="4_srw7n"]
+[ext_resource type="PackedScene" uid="uid://daojqpic6bj2l" path="res://Scenes/Components/HealthDropComponent.tscn" id="4_e3d2i"]
 
 [sub_resource type="CanvasTexture" id="CanvasTexture_7nfu5"]
 diffuse_texture = ExtResource("2_trtam")
@@ -34,10 +34,7 @@ region_rect = Rect2(128, 112, 32, 32)
 position = Vector2(0, -2)
 polygon = PackedVector2Array(0, 5, -7, 2, 0, -1, 7, 2)
 
-[node name="PointLight2D" type="PointLight2D" parent="."]
-visible = false
-y_sort_enabled = true
-position = Vector2(-4, -14)
-color = Color(0.999997, 0.554601, 0.343276, 1)
-texture = ExtResource("4_srw7n")
-texture_scale = 0.15
+[node name="HealthDropComponent" parent="." instance=ExtResource("4_e3d2i")]
+max_health = 4
+drop_item_id = "stick"
+drop_amount = 3

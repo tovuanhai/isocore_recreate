@@ -42,10 +42,6 @@ script = ExtResource("7_op4cu")
 [node name="Player" parent="." instance=ExtResource("3_5nsto")]
 position = Vector2(-16, -7)
 
-[node name="PlayerInventoryComponent" parent="Player" index="6"]
-slot_count = null
-hotbar_size = null
-
 [node name="CanvasLayer" parent="." instance=ExtResource("4_gjpho")]
 
 [node name="Minimap" parent="CanvasLayer/PanelContainer" index="0" node_paths=PackedStringArray("tile_map", "player")]

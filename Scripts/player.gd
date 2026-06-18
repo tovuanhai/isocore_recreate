@@ -86,39 +86,6 @@ func get_inventory() -> Inventory:
 	return $PlayerInventoryComponent.get_inventory()
 
 
-# ============================================================
-# MAGNET PHYSICS SYSTEM (Hệ thống vật lý hút đồ tự động)
-# ============================================================
-
-#func _setup_magnet_physics() -> void:
-	#magnet_zone = Area2D.new()
-	#magnet_zone.name = "MagnetZone"
-	#
-	## Cấu hình quét va chạm: Tắt Layer để không cản đường ai
-	#magnet_zone.collision_layer = 0
-	## Quét Mask số 3 (layer "items" — nơi GroundItem nằm)
-	#magnet_zone.collision_mask = 4  # bit 3 = giá trị 4
-	#
-	#var shape_node = CollisionShape2D.new()
-	#var circle_shape = CircleShape2D.new()
-	#circle_shape.radius = 60.0 # Bán kính nam châm quét đồ to đùng theo ý ông
-	#shape_node.shape = circle_shape
-	#
-	#magnet_zone.add_child(shape_node)
-	#add_child(magnet_zone)
-	
-	#magnet_zone.area_entered.connect(_on_magnet_zone_area_entered)
-	#magnet_zone.area_exited.connect(_on_magnet_zone_area_exited)
-
-#
-#func _on_magnet_zone_area_entered(area: Area2D) -> void:
-	#if area is GroundItem:
-		#area.activate_magnet(self)
-#
-#
-#func _on_magnet_zone_area_exited(area: Area2D) -> void:
-	#if area is GroundItem:
-		#area.deactivate_magnet()
 
 
 # ============================================================

@@ -7,6 +7,12 @@ extends CanvasLayer
 # 🎯 ĐÃ SỬA: Móc nối trực tiếp với cái Scene Tooltip ông vừa kéo vào
 @onready var item_tooltip: PanelContainer = $ItemTooltip
 
+@onready var chest_interface = $ChestInterface
+@onready var chest_grid = %ChestGrid
+@onready var player_grid_in_chest = %PlayerGridInChest
+
+var is_chest_open: bool = false
+
 var _cached_inventory: Inventory = null
 var _player_component: Node = null
 
@@ -17,6 +23,7 @@ var floating_label: Label
 
 
 func _ready() -> void:
+	self.process_mode = Node.PROCESS_MODE_ALWAYS
 	hotbar_grid.initialize_grid()
 	main_inventory_grid.initialize_grid()
 
@@ -24,6 +31,7 @@ func _ready() -> void:
 	GameEvents.ui_slot_hovered.connect(_on_ui_slot_hovered)
 	GameEvents.ui_slot_unhovered.connect(_on_ui_slot_unhovered)
 	GameEvents.inventory_changed.connect(_on_global_inventory_changed)
+	GameEvents.chest_opened.connect(_on_chest_opened)
 	
 	_setup_floating_cursor()
 	_find_player_and_bind()
@@ -39,6 +47,13 @@ func _input(event: InputEvent) -> void:
 	var is_tab_pressed = event is InputEventKey and event.keycode == KEY_TAB and event.pressed
 	
 	if is_toggle_pressed or is_tab_pressed:
+		
+		# 🎯 BƯỚC 1: Nếu Hòm đang mở, phím Tab sẽ Đóng Hòm và thoát luôn!
+		if is_chest_open:
+			close_chest() # Hàm ông viết hôm trước
+			get_viewport().set_input_as_handled()
+			return
+			
 		if main_inventory_panel.visible:
 			main_inventory_panel.hide()
 			item_tooltip.hide() # Tắt hòm đồ thì giấu Tooltip
@@ -51,19 +66,26 @@ func _input(event: InputEvent) -> void:
 # ---------------------------------------------------------------------------
 # XỬ LÝ TOOLTIP BẰNG SCENE NGOẠI VI
 # ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# XỬ LÝ TOOLTIP BẰNG SCENE NGOẠI VI
+# ---------------------------------------------------------------------------
 func _on_ui_slot_hovered(inventory: Inventory, slot_idx: int) -> void:
 	if not floating_slot.is_empty():
 		item_tooltip.hide()
 		return
 
-	if not main_inventory_panel.visible:
+	# 🎯 BƯỚC 2: Cấp phép hiện Tooltip nếu Túi Chính MỞ **HOẶC** Hòm Đồ MỞ
+	if not main_inventory_panel.visible and not is_chest_open:
 		item_tooltip.hide()
 		return
 
 	var slot = inventory.get_slot(slot_idx)
 	if slot and not slot.is_empty() and slot.item:
-		# 🎯 ĐÃ SỬA: Bắn dữ liệu sang cho Scene Tooltip tự lo việc vẽ chữ
+		# Bắn dữ liệu sang cho Scene Tooltip tự lo việc vẽ chữ
 		item_tooltip.display_info(slot.item, slot.durability)
+		
+		# 🎯 BƯỚC 3: Ép Tooltip luôn nổi lên trên cùng (Để không bị khung Hòm đè)
+		item_tooltip.z_index = 100 
 	else:
 		item_tooltip.hide()
 
@@ -198,3 +220,28 @@ func _unhandled_input(event: InputEvent) -> void:
 			_on_ui_slot_unhovered()
 			# Báo cho Godot biết cú click này đã bị UI tiêu thụ, không cho lọt xuống con Mèo nữa
 			get_viewport().set_input_as_handled()
+	if is_chest_open and (event.is_action_pressed("interact") or event.is_action_pressed("ui_cancel")):
+			close_chest()
+			get_viewport().set_input_as_handled()
+			
+func _on_chest_opened(chest_inv: Inventory, player_inv: Inventory) -> void:
+	# Hiển thị cái CenterContainer lên giữa màn hình
+	chest_interface.show()
+	is_chest_open = true
+	
+	#🎯 Nạp Data vào 2 cái lưới UI
+	#LƯU Ý: Thay hàm "set_inventory" bằng đúng tên hàm mà ông đang dùng 
+	#trong file InventoryGridUI.gd để truyền data nhé!
+	if chest_grid.has_method("set_inventory"):
+		chest_grid.set_inventory(chest_inv)
+		
+	if player_grid_in_chest.has_method("set_inventory"):
+		player_grid_in_chest.set_inventory(player_inv)
+		
+	# Khóa nhân vật không cho di chuyển/đập đá lúc đang lúi húi mở hòm
+	get_tree().paused = true
+
+func close_chest() -> void:
+	chest_interface.hide()
+	is_chest_open = false
+	get_tree().paused = false # Mở khóa cho game chạy tiếp

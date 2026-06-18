@@ -11,7 +11,7 @@ extends Control
 
 var slot_index: int = -1
 var inventory_ref: Inventory
-
+var _is_hotbar_slot: bool = false # Biến nội bộ
 
 func _ready() -> void:
 	_clear_visual()
@@ -19,21 +19,22 @@ func _ready() -> void:
 	mouse_entered.connect(_on_mouse_entered)
 	mouse_exited.connect(_on_mouse_exited)
 
+func set_as_hotbar() -> void:
+	_is_hotbar_slot = true
 
 func update_slot(slot: InventorySlot, inv: Inventory = null) -> void:
 	if inv != null:
 		inventory_ref = inv
 
-	# 🎯 THÊM LOGIC HIỂN THỊ SỐ THỨ TỰ HOTBAR (1 - 9, 0)
-	# Giả định hòm đồ của ông: 10 ô đầu tiên (0 đến 9) là Hotbar
-	if slot_index >= 0 and slot_index < 10:
+	# 🎯 ĐÃ SỬA: Chỉ hiện số NẾU lưới này được đánh dấu là Hotbar
+	if _is_hotbar_slot and slot_index >= 0 and slot_index < 10:
 		if slot_index == 9:
-			hotbar_number_label.text = "0" # Ô thứ 10 hiện số 0
+			hotbar_number_label.text = "0"
 		else:
 			hotbar_number_label.text = str(slot_index + 1)
 		hotbar_number_label.show()
 	else:
-		hotbar_number_label.hide() # Các ô thuộc túi đồ chính thì ẩn số đi
+		hotbar_number_label.hide()
 
 	# --- Đống code check icon, quantity, durability cũ của ông giữ nguyên ở dưới này ---
 	if slot == null or slot.is_empty():

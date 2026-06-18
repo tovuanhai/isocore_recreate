@@ -53,3 +53,6 @@ signal ui_slot_hovered(inventory: Inventory, slot_index: int)
 signal ui_slot_unhovered()
 # Bắn tín hiệu khi người chơi muốn vứt đồ ra đất
 signal drop_item_requested(item_data: ItemData, quantity: int, durability: int)
+
+signal chest_opened(chest_inventory: Inventory, player_inventory: Inventory)
+signal chest_closed()

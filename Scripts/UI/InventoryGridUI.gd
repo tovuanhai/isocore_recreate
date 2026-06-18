@@ -12,6 +12,9 @@ var grid_container: GridContainer = null
 
 var _slot_ui_nodes: Array[InventorySlotUI] = []
 
+var current_inventory: Inventory = null
+
+@export var is_hotbar: bool = false
 
 # ---------------------------------------------------------------------------
 # Khởi tạo ma trận ô giao diện trống
@@ -43,13 +46,16 @@ func initialize_grid() -> void:
 		child.queue_free()
 	_slot_ui_nodes.clear()
 
-	# 4. Đẻ các ô UI con ra dựa trên số lượng quy định
 	for i in slot_count:
 		var slot_ui = SLOT_UI_SCENE.instantiate() as InventorySlotUI
 		grid_container.add_child(slot_ui)
 		
-		# Gán vị trí ID thực tế cho ô UI biết đường tự quản lý
 		slot_ui.slot_index = start_index + i
+		
+		# 🎯 Bơm lệnh xuống cho các ô: "Ê, tụi mày là Hotbar đấy, đẻ số ra đi!"
+		if is_hotbar and slot_ui.has_method("set_as_hotbar"):
+			slot_ui.set_as_hotbar()
+			
 		_slot_ui_nodes.append(slot_ui)
 
 
@@ -83,3 +89,34 @@ func get_slot_ui_by_global_index(global_slot_idx: int) -> InventorySlotUI:
 	if global_slot_idx >= start_index and global_slot_idx < (start_index + slot_count):
 		return _slot_ui_nodes[global_slot_idx - start_index]
 	return null
+# ===========================================================================
+# 🎯 TÍCH HỢP TỰ ĐỘNG: Gắn chặt UI với Data của Inventory
+# ===========================================================================
+func set_inventory(inv: Inventory) -> void:
+	# 1. Ngắt kết nối với túi đồ cũ (nếu có) để tránh lỗi gọi 2 lần
+	if current_inventory and current_inventory.changed.is_connected(_on_inventory_changed):
+		current_inventory.changed.disconnect(_on_inventory_changed)
+		
+	current_inventory = inv
+	
+	if current_inventory == null:
+		return
+		
+	# 2. Điều chỉnh số lượng ô hiển thị cho khớp với túi đồ thật
+	# (Nếu túi chỉ có 20 ô, thì vẽ 20 ô, nếu 10 thì vẽ 10)
+	if slot_count > current_inventory.size or start_index == 0:
+		slot_count = current_inventory.size
+		
+	# 3. Đẻ các ô vuông ra màn hình
+	initialize_grid()
+	
+	# 4. Nạp đồ đạc vào các ô vuông đó
+	refresh_all(current_inventory)
+	
+	# 5. CẮM DÂY TÍN HIỆU: Kể từ bây giờ, bất cứ khi nào túi đồ có thay đổi
+	# (do đập đá, hút đồ, hay kéo thả), UI sẽ TỰ ĐỘNG cập nhật!
+	current_inventory.changed.connect(_on_inventory_changed)
+
+func _on_inventory_changed(slot_idx: int) -> void:
+	# Khi nhận được tín hiệu túi đồ thay đổi, chỉ vẽ lại đúng cái ô đó cho mượt
+	update_single_slot(current_inventory, slot_idx)

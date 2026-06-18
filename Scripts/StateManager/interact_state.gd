@@ -8,6 +8,7 @@ func initialize(p: Player) -> void:
 func enter(_msg := {}) -> void:
 	player.velocity = Vector2.ZERO
 	var tile_map = player.tile_map_node
+	if not tile_map: return
 	var base_layer = tile_map.base_ground
 
 	# Đồng bộ góc nhìn
@@ -38,46 +39,69 @@ func execute_interaction() -> void:
 	var damage = 1
 	var inv_comp = player.get_node_or_null("PlayerInventoryComponent")
 
-	# 🎯 NÂNG CẤP DỮ LIỆU ĐỘNG: Bốc đồ thật từ tay Mèo ra để tính toán
 	if inv_comp:
 		var slot = inv_comp.get_equipped_slot()
 		
-		# Kiểm tra xem tay có đang cầm đồ không, và đồ đó có phải là Công Cụ (ToolData) không
+		# Kiểm tra Tool và tính toán Sát thương
 		if slot and not slot.is_empty() and slot.item is ToolData:
 			var tool = slot.item as ToolData
 
-			# 1. ĐỐI CHIẾU CÔNG CỤ & ĐỊA HÌNH
-			# Đào đất -> Cần Xẻng
+			# ĐỐI CHIẾU CÔNG CỤ & ĐỊA HÌNH
 			if player.interact_type == "mine_ground" and tool.tool_category == ToolData.ToolCategory.SHOVEL:
 				damage = tool.base_damage
-			# Đập đá -> Cần Cuốc
 			elif player.interact_type == "mine_object" and tool.tool_category == ToolData.ToolCategory.PICKAXE:
 				damage = tool.base_damage
 			else:
-				# Dùng sai dụng cụ (VD: Lấy xẻng đi đập đá) -> Phạt sát thương về 1
 				damage = 1
 
-			# 2. TRỪ ĐỘ BỀN VÀ XỬ LÝ GÃY ĐỒ
-			# Công cụ nào có độ bền (durability > 0) thì mới trừ
+			# TRỪ ĐỘ BỀN
 			if slot.durability > 0:
 				slot.durability -= 1
-				
-				# Nếu trừ xong mà bằng 0 tức là cuốc đã gãy
 				if slot.durability <= 0:
-					slot.clear() # Xóa sạch item khỏi ô Hotbar này
-				
-				# 3. KÍCH HOẠT UI TỰ ĐỘNG CẬP NHẬT
-				# Bắn loa báo cho UI biết cái ô này vừa bị đổi máu/gãy để nó vẽ lại
+					slot.clear()
 				inv_comp.inventory.changed.emit(inv_comp.equipped_slot_index)
 
-
-	# Emit đúng format: (player: Node2D, cell: Vector2i, action_type: String, damage: int)
-	GameEvents.tile_hit.emit(player, player.interact_tile, player.interact_type, damage)
+	# 🎯 THAY VÌ BẮN EVENT NGAY, CHUYỂN QUA TRẠM PHÂN LUỒNG
+	_perform_hit(player.interact_tile, damage)
 
 	await get_tree().create_timer(0.15).timeout
 	if current_state_active():
 		player.interact_type = ""
 		transition_requested.emit("Idle")
+
+# ==============================================================================
+# 🎯 TRẠM PHÂN LUỒNG (INTERCEPT LAYER)
+# ==============================================================================
+func _perform_hit(target_cell: Vector2i, tool_damage: int) -> void:
+	var tile_map = player.tile_map_node
+	if not tile_map: return
+
+	# 1. TỌA ĐỘ TOÁN HỌC (Nằm sát đất, dùng để đẻ item hít Y-Sort chuẩn xác)
+	var pure_cell_global = tile_map.base_ground.to_global(tile_map.base_ground.map_to_local(target_cell))
+	
+	# 2. TỌA ĐỘ HIỂN THỊ (Cộng thêm độ cao núi, dùng để bắn hạt bụi VFX)
+	var vfx_global = pure_cell_global
+	if tile_map.world_data.has(target_cell):
+		vfx_global.y -= (tile_map.world_data[target_cell]["z"] * tile_map.cliff_height)
+
+	# KIỂM TRA THỰC THỂ: (Hòm, Lò nung, Cây, Đá đã gắn Component)
+	if tile_map.get("spawned_objects") and tile_map.spawned_objects.has(target_cell):
+		var obj_node = tile_map.spawned_objects[target_cell]
+		var health_comp = obj_node.get_node_or_null("HealthDropComponent")
+		
+		if health_comp:
+			# Bắn VFX theo mắt nhìn, nhưng Đẻ đồ theo tọa độ gốc!
+			GameEvents.tile_hit_vfx.emit(vfx_global, player.interact_type, obj_node)
+			health_comp.take_damage(tool_damage, pure_cell_global)
+			return 
+			
+		elif obj_node.has_method("break_object"):
+			GameEvents.tile_hit_vfx.emit(vfx_global, player.interact_type, obj_node)
+			obj_node.break_object(pure_cell_global)
+			return 
+
+	# VẬT THỂ MẶT ĐẤT (Đào đất trống lấy Dirt)
+	GameEvents.tile_hit.emit(player, target_cell, player.interact_type, tool_damage)
 
 func current_state_active() -> bool:
 	var fsm = player.get_node_or_null("StateMachine")
