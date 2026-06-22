@@ -28,7 +28,7 @@ func setup_noises() -> void:
 	continental_noise = FastNoiseLite.new()
 	continental_noise.seed = randi()
 	continental_noise.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
-	continental_noise.frequency = 0.0015 
+	continental_noise.frequency = 0.001 
 
 	erosion_noise = FastNoiseLite.new()
 	erosion_noise.seed = randi() + 123
@@ -60,79 +60,74 @@ func setup_noises() -> void:
 
 
 # ============================================================
-# 🎯 TÍNH TOÁN ĐỘ CAO (ĐỈNH NHỌN JAGGED PEAKS & VÁCH CLIFF)
+# 🎯 TÍNH TOÁN ĐỘ CAO (ĐỒNG NHẤT BẬC THANG CHO CẢ BIỂN VÀ LỤC ĐỊA)
 # ============================================================
 func _sample_elevation(gx: int, gy: int) -> int:
 	var cont = (continental_noise.get_noise_2d(gx, gy) + 1.0) / 2.0 
 	var ero = (erosion_noise.get_noise_2d(gx, gy) + 1.0) / 2.0     
-	var w = weirdness_noise.get_noise_2d(gx, gy) # Giữ nguyên gốc từ -1.0 đến 1.0
+	var w = weirdness_noise.get_noise_2d(gx, gy) 
 	var micro = micro_noise.get_noise_2d(gx, gy)
 
 	var wl = float(hub.water_level)
 	var max_e = float(hub.max_elevation)
-	var final_z := 0.0
 
+	# 1. 🌍 ĐỊA HÌNH CƠ SỞ (BASE ELEVATION)
+	var base_z = 0.0
 	if cont < 0.4:
-		# ==========================================
-		# 🌊 ĐẠI DƯƠNG (Giữ nguyên độ mượt)
-		# ==========================================
-		var shore_dist = cont / 0.4 
-		var base_floor = lerpf(0.0, wl - 1.0, pow(shore_dist, 1.2))
-		
-		var mountain_shape = (w + 1.0) / 2.0
-		var seabed_noise = (mountain_shape + ero) / 2.0
-		
-		var current_depth = (wl - 1.0) - base_floor 
-		var max_hill_height = minf(8.0, current_depth) 
-		var underwater_roughness = lerpf(-4.0, max_hill_height, seabed_noise)
-		
-		final_z = base_floor + underwater_roughness + (micro * 1.5)
-		final_z = maxf(final_z, 0.0)
-
+		# Đại dương: Lõm sâu từ 0.0 lên đến mặt nước
+		var ocean_frac = cont / 0.4
+		base_z = lerpf(0.0, wl, pow(ocean_frac, 1.5))
 	else:
-		# ==========================================
-		# 🏔️ LỤC ĐỊA: Chóp nhọn vút & Vách đứt gãy
-		# ==========================================
+		# Lục địa: Nhô cao từ mặt nước trở lên
 		var land_frac = (cont - 0.4) / 0.6
-		var base_z = lerpf(wl, wl + 3.0, pow(land_frac, 1.2))
+		base_z = lerpf(wl + 1.0, wl + 3.0, pow(land_frac, 1.2))
+
+	# 2. ⛰️ TẠO ĐỒI NÚI & RẶNG NGẦM (Áp dụng chung)
+	var m_intensity = 1.0 - ero
+	var mountain_multiplier = smoothstep(0.2, 0.7, m_intensity)
+	
+	var raw_peak = 1.0 - abs(w) 
+	var jagged_peak = clampf(raw_peak + (micro * 0.3), 0.0, 1.0)
+	var sharp_peak = pow(jagged_peak, 3.0)
+	
+	# Tính toán độ cao tối đa mà núi có thể mọc lên
+	var height_potential = (max_e - base_z - 2.0)
+	if cont < 0.4:
+		# Nếu là núi dưới đáy biển, ép nó không được cao vượt quá mực nước
+		height_potential = wl * 0.8 
 		
-		var m_intensity = 1.0 - ero
-		var mountain_multiplier = smoothstep(0.2, 0.7, m_intensity)
-		
-		# 1. 🎯 SỬA ĐỈNH NÚI SẮC NHỌN (JAGGED PEAKS)
-		var raw_peak = 1.0 - abs(weirdness_noise.get_noise_2d(gx, gy)) 
-		
-		# Bơm trực tiếp nhiễu (micro) vào sườn núi để bẻ gãy sự hoàn hảo của hình nón
-		var jagged_peak = clampf(raw_peak + (micro * 0.3), 0.0, 1.0)
-		
-		# Mũ 3.0 đẩy lực vút lên trời: Chân núi thì trải rộng, nhưng đỉnh thì xé mây!
-		var sharp_peak = pow(jagged_peak, 3.0)
-		
-		var added_height = sharp_peak * mountain_multiplier * (max_e - base_z - 2.0)
-		
-		# 2. 🎯 TẠO VÁCH NÚI TỰ NHIÊN (TERRACE BLENDING)
-		if added_height > 2.0:
-			# Làm méo mó sườn dốc bằng nhiễu biên độ lớn
-			added_height += micro * 6.0 * mountain_multiplier
-			
-			# TÍNH TOÁN BẬC THANG (Độ cao nếu bị giật cấp vách đá)
-			var terrace = roundf(added_height / 4.0) * 4.0
-			
-			# Lấy một lớp nhiễu độc lập (cộng thêm offset 50) để làm Mặt nạ Trộn.
-			var cliff_noise = micro_noise.get_noise_2d(gx + 50, gy + 50)
-			
-			# MỘT NỬA là sườn dốc (added_height), MỘT NỬA là vách đá dựng đứng (terrace)
-			var rock_cliff_chance = smoothstep(-0.2, 0.6, cliff_noise)
-			
-			# Thuật toán lai tạo: Tạo ra các mỏm đá gồ ghề cực kỳ tự nhiên
-			added_height = lerpf(added_height, terrace, rock_cliff_chance)
-			
+	var added_height = sharp_peak * mountain_multiplier * height_potential
+
+	# 3. 🧱 TẠO VÁCH ĐÁ BẬC THANG (Khấu trừ cho cả Biển và Đất)
+	# Hạ mốc xuống > 1.0 để các đụn cát nhỏ dưới biển cũng đóng thành bậc thang
+	if added_height > 1.0:
+		added_height += micro * 6.0 * mountain_multiplier
+		var terrace = roundf(added_height / 4.0) * 4.0
+		var cliff_noise = micro_noise.get_noise_2d(gx + 50, gy + 50)
+		var rock_cliff_chance = smoothstep(-0.2, 0.6, cliff_noise)
+		added_height = lerpf(added_height, terrace, rock_cliff_chance)
+
+	# 4. 🌊 KIỂM SOÁT ĐẶC THÙ (Bãi tắm & Hồ lún)
+	var lake_carve = 0.0
+	if cont >= 0.4:
+		# TRÊN BỜ: Gọt phẳng bờ biển (Coast Mask) & Khoét hồ nước (Sinkholes)
 		var coast_mask = smoothstep(0.4, 0.45, cont)
-		final_z = base_z + (added_height * coast_mask)
+		added_height *= coast_mask
 		
-		# Trả lại gồ ghề nhẹ cho đồng bằng
-		if added_height <= 2.0 and cont > 0.4:
-			final_z += micro * 1.0
+		var lake_chance = smoothstep(0.65, 0.95, ero) 
+		lake_carve = lake_chance * (wl + 4.0) 
+	else:
+		# DƯỚI BIỂN: Dọn dẹp rặng san hô sát bờ để chừa chỗ cho Cát vàng bãi biển
+		var ocean_frac = cont / 0.4
+		var beach_blend = smoothstep(0.85, 1.0, ocean_frac)
+		added_height *= (1.0 - beach_blend)
+
+	# 5. 🧮 TỔNG HỢP (Base + Núi - Hồ)
+	var final_z = base_z + added_height - lake_carve
+
+	# Thêm gợn lăn tăn cho đồng bằng trên cạn
+	if added_height <= 2.0 and lake_carve < 0.1 and cont >= 0.4:
+		final_z += micro * 1.0
 
 	return clampi(roundi(final_z), 0, hub.max_elevation)
 
@@ -158,7 +153,7 @@ func _determine_biome(temp: float, hum: float, elevation: int, water_level: int)
 	if actual_temp < -0.35:
 		# Phải âm sâu (< -0.35) mới ra Tuyết
 		return "snow" 
-	elif actual_temp > 0.4 and hum < -0.2:
+	elif actual_temp > 0.4 and hum < -0.75:
 		# Phải rất nóng VÀ rất khô mới ra Sa mạc/Đất cằn
 		return "dirt" 
 	else:
@@ -167,11 +162,13 @@ func _determine_biome(temp: float, hum: float, elevation: int, water_level: int)
 
 
 # ============================================================
-# 🎯 VẼ BẢN ĐỒ
+# 🎯 TÍNH TOÁN DỮ LIỆU THUẦN (CHẠY TRÊN THREAD NGẦM)
+# Khong gọi hàm render hay đụng vào Scene Tree ở đây!
 # ============================================================
-func generate_chunk_data_and_render(chunk_pos: Vector2i) -> void:
+func generate_chunk_data(chunk_pos: Vector2i) -> Dictionary:
 	var start_x = chunk_pos.x * hub.chunk_size
 	var start_y = chunk_pos.y * hub.chunk_size
+	var chunk_data_result = {}
 
 	for x in range(hub.chunk_size):
 		for y in range(hub.chunk_size):
@@ -179,47 +176,43 @@ func generate_chunk_data_and_render(chunk_pos: Vector2i) -> void:
 			var global_y = start_y + y
 			var pos_2d = Vector2i(global_x, global_y)
 
-			if not hub.world_data.has(pos_2d):
-				# 1. Lấy độ cao
-				var elevation = _sample_elevation(global_x, global_y)
-				var is_water = (elevation <= hub.water_level)
-				
-				var biome_name = "dirt"
-				var spawn_obj = "none"
+			# Tính toán y hệt code cũ của ông
+			var elevation = _sample_elevation(global_x, global_y)
+			var is_water = (elevation <= hub.water_level)
+			var biome_name = "dirt"
+			var spawn_obj = "none"
 
-				if is_water:
-					biome_name = "dirt" # Đáy biển
-				else:
-					# 2. Trộn Nhiệt độ & Độ ẩm để lấy Biome
-					var temp = temperature_noise.get_noise_2d(global_x, global_y)
-					var hum = humidity_noise.get_noise_2d(global_x, global_y)
-					biome_name = _determine_biome(temp, hum, elevation, hub.water_level)
+			if is_water:
+				biome_name = "dirt" 
+			else:
+				var temp = temperature_noise.get_noise_2d(global_x, global_y)
+				var hum = humidity_noise.get_noise_2d(global_x, global_y)
+				biome_name = _determine_biome(temp, hum, elevation, hub.water_level)
 
-					# 3. Phân bổ Cây và Đá theo Mật độ
-					if biome_name == "grass" or biome_name == "snow":
-						var tree_type = "Snow_Tree" if biome_name == "snow" else "Grass_Tree"
-						var d_val = density_noise.get_noise_2d(global_x, global_y)
-						var rand = randf()
+				if biome_name == "grass" or biome_name == "snow":
+					var tree_type = "Snow_Tree" if biome_name == "snow" else "Grass_Tree"
+					var d_val = density_noise.get_noise_2d(global_x, global_y)
+					var rand = randf()
 
-						if d_val > hub.config.dense_forest_threshold:
-							if rand < hub.config.dense_forest_chance:
-								spawn_obj = tree_type
-						elif d_val < -hub.config.dense_forest_threshold:
-							if rand < hub.config.sparse_rock_chance:
-								spawn_obj = "rock1"
-						else:
-							if rand < hub.config.plain_tree_chance:
-								spawn_obj = tree_type
-							elif rand < hub.config.plain_tree_chance + hub.config.plain_rock_chance:
-								spawn_obj = "rock1"
+					if d_val > hub.config.dense_forest_threshold:
+						if rand < hub.config.dense_forest_chance:
+							spawn_obj = tree_type
+					elif d_val < -hub.config.dense_forest_threshold:
+						if rand < hub.config.sparse_rock_chance:
+							spawn_obj = "rock1"
+					else:
+						if rand < hub.config.plain_tree_chance:
+							spawn_obj = tree_type
+						elif rand < hub.config.plain_tree_chance + hub.config.plain_rock_chance:
+							spawn_obj = "rock1"
 
-				# 4. Ghi data
-				hub.world_data[pos_2d] = {
-					"type": "ground",
-					"biome": biome_name,
-					"z": elevation,
-					"object": spawn_obj,
-					"is_water": is_water
-				}
+			# Chỉ Đóng gói Data, không vẽ gì cả
+			chunk_data_result[pos_2d] = {
+				"type": "ground",
+				"biome": biome_name,
+				"z": elevation,
+				"object": spawn_obj,
+				"is_water": is_water
+			}
 			
-			hub.spawner.render_voxel_column(pos_2d)
+	return chunk_data_result
