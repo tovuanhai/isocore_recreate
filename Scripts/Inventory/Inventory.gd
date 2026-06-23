@@ -102,13 +102,41 @@ func swap_slots(index_a: int, index_b: int) -> void:
 	changed.emit(index_a)
 	changed.emit(index_b)
 
-# ---------------------------------------------------------------------------
-# Debug
-# ---------------------------------------------------------------------------
-func print_contents() -> void:
-	print("=== Inventory (%d slots) ===" % size)
-	for i in size:
-		var s = slots[i]
-		if not s.is_empty():
-			var dur_str = " [dur:%d]" % s.durability if s.durability >= 0 else ""
-			print("  [%d] %s x%d%s" % [i, s.item.id, s.quantity, dur_str])
+## ---------------------------------------------------------------------------
+## Debug
+## ---------------------------------------------------------------------------
+#func print_contents() -> void:
+	#print("=== Inventory (%d slots) ===" % size)
+	#for i in size:
+		#var s = slots[i]
+		#if not s.is_empty():
+			#var dur_str = " [dur:%d]" % s.durability if s.durability >= 0 else ""
+			#print("  [%d] %s x%d%s" % [i, s.item.id, s.quantity, dur_str])
+
+# 1. Đếm tổng số lượng của một loại Item trong toàn bộ túi đồ
+func get_total_item_count_by_id(item_id: String) -> int:
+	var total = 0
+	for slot in slots:
+		if not slot.is_empty() and slot.item.id == item_id:
+			total += slot.quantity
+	return total
+
+# 2. Rút nguyên liệu ra khỏi túi đồ (Rút từ nhiều ô cộng dồn lại)
+func consume_item_by_id(item_id: String, amount_to_consume: int) -> void:
+	var remaining_to_consume = amount_to_consume
+	
+	for i in range(slots.size()):
+		var slot = slots[i]
+		if not slot.is_empty() and slot.item.id == item_id:
+			if slot.quantity >= remaining_to_consume:
+				# Ô này đủ đồ để trừ
+				slot.quantity -= remaining_to_consume
+				if slot.quantity == 0:
+					slot.clear()
+				changed.emit(i)
+				return # Đã trừ xong
+			else:
+				# Ô này không đủ, lấy hết ô này rồi đi tìm ô tiếp theo
+				remaining_to_consume -= slot.quantity
+				slot.clear()
+				changed.emit(i)

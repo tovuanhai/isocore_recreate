@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="RecipeData" load_steps=3 format=3 uid="uid://q2cfy448n5hl"]
+
+[ext_resource type="Resource" uid="uid://icwgtb64as8g" path="res://Resources/Items/wooden_pickaxe.tres" id="1_gjq78"]
+[ext_resource type="Script" uid="uid://b3ayeyrsb5ndm" path="res://Scripts/Items/recipe_data.gd" id="1_l1axs"]
+
+[resource]
+script = ExtResource("1_l1axs")
+recipe_id = "recipe_wooden_pickaxe"
+ingredients = {
+"stick": 3
+}
+output_item = ExtResource("1_gjq78")
+output_amount = 1
+metadata/_custom_type_script = "uid://b3ayeyrsb5ndm"

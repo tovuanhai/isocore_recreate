@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://dm2gsuvv6qynt"]
+[gd_scene load_steps=19 format=3 uid="uid://dm2gsuvv6qynt"]
 
 [ext_resource type="Script" uid="uid://dn2vrqd6uw721" path="res://Scripts/UI/InventoryInterface.gd" id="1_8wlyu"]
 [ext_resource type="FontFile" uid="uid://mkvknh57gn2b" path="res://Assets/UI/Fonts/DFVN Pexel Grotesk.otf" id="1_48q88"]
@@ -7,21 +7,19 @@
 [ext_resource type="Script" uid="uid://b5p60wrlkrqb3" path="res://Scripts/UI/minimap.gd" id="2_hfhsn"]
 [ext_resource type="Texture2D" uid="uid://dn0clldiwpytt" path="res://Assets/UI/Minimap/minimap_frame_background.png" id="2_nxvpl"]
 [ext_resource type="Texture2D" uid="uid://c63xm1a1lndo7" path="res://Assets/UI/Minimap/minimap_frame.png" id="4_hfhsn"]
-[ext_resource type="Shader" uid="uid://b17lgnx81f4ix" path="res://Resources/god_rays.gdshader" id="7_xjg7p"]
 [ext_resource type="PackedScene" uid="uid://5j57ils4lfbj" path="res://Scenes/UI/InventoryGridUI.tscn" id="8_w8wei"]
+[ext_resource type="Script" uid="uid://ded3ju30vkn0v" path="res://Scripts/UI/ItemNameOnHotbarLabel.gd" id="9_u6hof"]
 [ext_resource type="PackedScene" uid="uid://d03eq0wj6bqu" path="res://Scenes/UI/ItemTooltip.tscn" id="11_nqsl3"]
 [ext_resource type="StyleBox" uid="uid://dcoln7n3lj0ab" path="res://Resources/UI/panel.tres" id="11_u6hof"]
+[ext_resource type="PackedScene" uid="uid://cwgidp4kxh6fc" path="res://Scenes/UI/crafting_interface.tscn" id="13_o3jj0"]
+[ext_resource type="PackedScene" uid="uid://8hgyon1kanut" path="res://Scenes/UI/mouse_cursor.tscn" id="13_thdbn"]
+[ext_resource type="Script" uid="uid://b3ayeyrsb5ndm" path="res://Scripts/Items/recipe_data.gd" id="14_813c4"]
+[ext_resource type="Resource" uid="uid://lppluodgpmde" path="res://Resources/Items/test_hand.tres" id="15_jlkmm"]
+[ext_resource type="Resource" uid="uid://csjeotbto7qcs" path="res://Resources/Items/test_bench.tres" id="16_462t7"]
+[ext_resource type="Resource" uid="uid://clahcykxw1ndt" path="res://Resources/Items/recipe_wooden_bench.tres" id="17_jlkmm"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_dewlx"]
 texture = ExtResource("2_nxvpl")
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_mg6lk"]
-shader = ExtResource("7_xjg7p")
-shader_parameter/ray_color = Color(1, 0.9, 0.65, 0.15)
-shader_parameter/player_pos = Vector2(0, 0)
-shader_parameter/angle = -0.3
-shader_parameter/speed = 1.0
-shader_parameter/ray_spacing = 3.0
 
 [node name="InventoryInterface" type="CanvasLayer"]
 script = ExtResource("1_8wlyu")
@@ -60,37 +58,40 @@ theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_fonts/font = ExtResource("1_48q88")
 script = ExtResource("1_nxvpl")
 
-[node name="GodRaysContainer" type="Control" parent="."]
-visible = false
-custom_minimum_size = Vector2(1280, 720)
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-
-[node name="ColorRect" type="ColorRect" parent="GodRaysContainer"]
-material = SubResource("ShaderMaterial_mg6lk")
-custom_minimum_size = Vector2(1280, 720)
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-
 [node name="HotbarGridUI" parent="." instance=ExtResource("8_w8wei")]
 anchors_preset = 7
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
-offset_top = -44.0
-offset_bottom = -44.0
+offset_left = -114.0
+offset_top = -45.0
+offset_right = 114.0
+offset_bottom = -45.0
 grow_vertical = 0
 is_hotbar = true
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+visible = false
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -101.5
+offset_top = -77.0
+offset_right = 101.5
+offset_bottom = -37.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/separation = 8
+
+[node name="Label" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+theme_override_font_sizes/font_size = 18
+text = "fsdgsdgsgsdgsdgsdgsdg"
+script = ExtResource("9_u6hof")
 
 [node name="ItemTooltip" parent="." instance=ExtResource("11_nqsl3")]
 visible = false
@@ -190,3 +191,12 @@ text = "Inventory"
 unique_name_in_owner = true
 layout_mode = 2
 slot_count = 20
+
+[node name="CraftingInterface" parent="." instance=ExtResource("13_o3jj0")]
+offset_left = 19.0
+offset_top = -251.0
+offset_right = 369.0
+offset_bottom = 249.0
+all_recipes = Array[ExtResource("14_813c4")]([ExtResource("15_jlkmm"), ExtResource("16_462t7"), ExtResource("17_jlkmm")])
+
+[node name="MouseCursor" parent="." instance=ExtResource("13_thdbn")]

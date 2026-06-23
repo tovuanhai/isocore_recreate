@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="WorldConfig" load_steps=2 format=3 uid="uid://llqk107svpil"]
 
-[ext_resource type="Script" uid="uid://c6wkovf5uax84" path="res://Scripts/Autoloads/world_config.gd" id="1_2c4nl"]
+[ext_resource type="Script" uid="uid://c6wkovf5uax84" path="res://Scripts/World/world_config.gd" id="1_2c4nl"]
 
 [resource]
 script = ExtResource("1_2c4nl")
@@ -8,7 +8,7 @@ chunk_size = 16
 render_distance = 2
 max_elevation = 40
 cliff_height = 6
-water_level = 15
+water_level = 10
 deep_water_color = Color(0.101961, 0.301961, 0.486275, 1)
 hover_face_height = 3
 biome_grass = Array[Vector2i]([Vector2i(2, 3), Vector2i(2, 0), Vector2i(3, 0)])

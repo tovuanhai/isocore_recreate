@@ -10,6 +10,7 @@ extends CanvasLayer
 @onready var chest_interface = $ChestInterface
 @onready var chest_grid = %ChestGrid
 @onready var player_grid_in_chest = %PlayerGridInChest
+@onready var crafting_interface = $CraftingInterface
 
 # 🎯 ĐÃ THÊM: Biến lưu trữ dữ liệu của Hòm đồ và trạng thái mở hòm
 var _active_chest_inventory: Inventory = null
@@ -23,7 +24,6 @@ var floating_cursor_node: Control
 var floating_icon: TextureRect
 var floating_label: Label
 
-
 func _ready() -> void:
 	self.process_mode = Node.PROCESS_MODE_ALWAYS
 	hotbar_grid.initialize_grid()
@@ -34,9 +34,13 @@ func _ready() -> void:
 	GameEvents.ui_slot_unhovered.connect(_on_ui_slot_unhovered)
 	GameEvents.inventory_changed.connect(_on_global_inventory_changed)
 	GameEvents.chest_opened.connect(_on_chest_opened)
+	GameEvents.crafting_station_opened.connect(_on_crafting_station_opened)
 	
 	_setup_floating_cursor()
 	_find_player_and_bind()
+	
+	var player_craft = get_tree().current_scene.get_node("Player/PlayerCraftingComponent")
+	crafting_interface.setup(player_craft)
 
 
 func _process(_delta: float) -> void:
@@ -44,30 +48,27 @@ func _process(_delta: float) -> void:
 		floating_cursor_node.global_position = get_viewport().get_mouse_position()
 
 
-func _input(event: InputEvent) -> void:
-	var is_toggle_pressed = event.is_action_pressed("toggle_inventory")
-	var is_tab_pressed = event is InputEventKey and event.keycode == KEY_TAB and event.pressed
-	
-	if is_toggle_pressed or is_tab_pressed:
-		
-		# 🎯 BƯỚC 1: Nếu Hòm đang mở, phím Tab sẽ Đóng Hòm và thoát luôn!
-		if is_chest_open:
-			close_chest() # Hàm ông viết hôm trước
-			get_viewport().set_input_as_handled()
-			return
-			
-		if main_inventory_panel.visible:
-			main_inventory_panel.hide()
-			item_tooltip.hide() # Tắt hòm đồ thì giấu Tooltip
-		else:
-			if _cached_inventory:
-				main_inventory_grid.refresh_all(_cached_inventory)
-				main_inventory_panel.show()
+#func _input(event: InputEvent) -> void:
+	#var is_toggle_pressed = event.is_action_pressed("toggle_inventory")
+	#var is_tab_pressed = event is InputEventKey and event.keycode == KEY_TAB and event.pressed
+	#
+	#if is_toggle_pressed or is_tab_pressed:
+		#
+		## 🎯 BƯỚC 1: Nếu Hòm đang mở, phím Tab sẽ Đóng Hòm và thoát luôn!
+		#if is_chest_open:
+			#close_chest() # Hàm ông viết hôm trước
+			#get_viewport().set_input_as_handled()
+			#return
+			#
+		#if main_inventory_panel.visible:
+			#main_inventory_panel.hide()
+			#item_tooltip.hide() # Tắt hòm đồ thì giấu Tooltip
+		#else:
+			#if _cached_inventory:
+				#main_inventory_grid.refresh_all(_cached_inventory)
+				#main_inventory_panel.show()
 
 
-# ---------------------------------------------------------------------------
-# XỬ LÝ TOOLTIP BẰNG SCENE NGOẠI VI
-# ---------------------------------------------------------------------------
 # ---------------------------------------------------------------------------
 # XỬ LÝ TOOLTIP BẰNG SCENE NGOẠI VI
 # ---------------------------------------------------------------------------
@@ -247,27 +248,105 @@ func _find_player_and_bind() -> void:
 		_on_hotbar_selection_changed(_player_component.equipped_slot_index)
 		_player_component.hotbar_selection_changed.connect(_on_hotbar_selection_changed)
 
-# Hàm này tự động bắt các cú click chuột trượt ra ngoài giao diện UI
 func _unhandled_input(event: InputEvent) -> void:
+	
+	# ====================================================================
+	# 1. CHUỘT TRÁI (Ném đồ ra ngoài thế giới)
+	# ====================================================================
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-		# Nếu click ra ngoài VÀ đang cầm đồ trên chuột
 		if not floating_slot.is_empty():
-			
-			# 1. Bắn loa gọi hệ thống sinh ra đồ vật ở ngoài thế giới
 			GameEvents.drop_item_requested.emit(floating_slot.item, floating_slot.quantity, floating_slot.durability)
-			
-			# 2. Xóa sạch đồ đang dính trên trỏ chuột
 			floating_slot.clear()
 			_update_floating_cursor_visual()
-			
-			# 3. Giấu Tooltip đi cho đỡ lỗi
 			_on_ui_slot_unhovered()
-			# Báo cho Godot biết cú click này đã bị UI tiêu thụ, không cho lọt xuống con Mèo nữa
 			get_viewport().set_input_as_handled()
-	if is_chest_open and (event.is_action_pressed("interact") or event.is_action_pressed("ui_cancel")):
+			return
+
+	# ====================================================================
+	# 2. PHÍM ESC: Nút "Panic" - ĐÓNG SẬP TẤT CẢ GIAO DIỆN
+	# ====================================================================
+	if event.is_action_pressed("ui_cancel") or (event is InputEventKey and event.keycode == KEY_ESCAPE and event.pressed):
+		var handled = false
+		
+		if is_chest_open:
 			close_chest()
-			get_viewport().set_input_as_handled()
+			handled = true
 			
+		if crafting_interface and crafting_interface.visible:
+			crafting_interface.close_menu()
+			handled = true
+			
+		if main_inventory_panel.visible:
+			main_inventory_panel.hide()
+			if item_tooltip: item_tooltip.hide()
+			handled = true
+			
+		if handled:
+			get_viewport().set_input_as_handled()
+		return
+
+	# ====================================================================
+	# 3. PHÍM E (TƯƠNG TÁC): ƯU TIÊN ĐÓNG GIAO DIỆN TƯƠNG TÁC NẾU ĐANG MỞ
+	# ====================================================================
+	if event.is_action_pressed("interact") or (event is InputEventKey and event.keycode == KEY_E and event.pressed):
+		var handled = false
+		
+		# NẾU đang mở Rương -> Bấm E sẽ ĐÓNG Rương
+		if is_chest_open:
+			close_chest()
+			handled = true
+			
+		# NẾU đang mở Bàn Chế Tạo (Cấp độ > 0) -> Bấm E sẽ ĐÓNG Bàn
+		if crafting_interface and crafting_interface.visible:
+			var comp = crafting_interface.player_crafting_comp
+			if comp and comp.active_station > 0:
+				crafting_interface.close_menu()
+				# Đóng bàn thì tiện tay tắt luôn túi đồ người chơi
+				if main_inventory_panel.visible:
+					main_inventory_panel.hide()
+					if item_tooltip: item_tooltip.hide()
+				handled = true
+		
+		# 🎯 Ma thuật ở đây:
+		if handled:
+			# Đã dùng phím E để ĐÓNG UI -> Nuốt luôn phím E.
+			get_viewport().set_input_as_handled()
+			return
+		# NẾU KHÔNG CÓ UI TƯƠNG TÁC NÀO ĐANG MỞ:
+		# Phím E sẽ tự động trôi tuột qua đây, rớt xuống file 'input_handler.gd'
+		# để kích hoạt lệnh MỞ Rương / MỞ Bàn!
+
+	# ====================================================================
+	# 4. PHÍM TAB: BẬT / TẮT TÚI ĐỒ (MAIN INVENTORY)
+	# ====================================================================
+	if event.is_action_pressed("toggle_inventory") or (event is InputEventKey and event.keycode == KEY_TAB and event.pressed):
+		if main_inventory_panel.visible:
+			main_inventory_panel.hide()
+			if item_tooltip: item_tooltip.hide()
+			# Tắt túi đồ thì tắt luôn chế tạo "Tay không" nếu nó đang mở
+			if crafting_interface and crafting_interface.visible:
+				var comp = crafting_interface.player_crafting_comp
+				if comp and comp.active_station == 0:
+					crafting_interface.close_menu()
+		else:
+			if _cached_inventory:
+				main_inventory_grid.refresh_all(_cached_inventory)
+			main_inventory_panel.show()
+			
+		get_viewport().set_input_as_handled()
+		return
+
+	# ====================================================================
+	# 5. PHÍM C: CHỈ BẬT CHẾ TẠO TAY KHÔNG
+	# ====================================================================
+	if event is InputEventKey and event.keycode == KEY_C and event.pressed:
+		if crafting_interface:
+			crafting_interface.toggle_menu(0) # 0 = Tay không
+			# Mở Menu chế tạo thì phải bật tự động túi đồ lên để xem nguyên liệu
+			if crafting_interface.visible and not main_inventory_panel.visible:
+				main_inventory_panel.show()
+		get_viewport().set_input_as_handled()
+
 func _on_chest_opened(chest_inv: Inventory, player_inv: Inventory) -> void:
 	# Hiển thị cái CenterContainer lên giữa màn hình
 	chest_interface.show()
@@ -296,3 +375,13 @@ func close_chest() -> void:
 	is_chest_open = false
 	
 	get_tree().paused = false # Mở khóa cho game chạy tiếp
+
+# 🎯 HÀM MỚI: Mở UI khi tương tác với Bàn Chế Tạo
+func _on_crafting_station_opened(station_type: int) -> void:
+	# 1. Bật bảng Inventory của người chơi lên (để có đồ mà kéo thả)
+	if not main_inventory_panel.visible:
+		main_inventory_panel.show()
+		
+	# 2. Bật bảng Crafting ở bên trái màn hình với cấp độ của cái bàn
+	if crafting_interface:
+		crafting_interface.open_menu(station_type)

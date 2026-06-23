@@ -17,6 +17,7 @@ extends Resource
 @export var biome_grass: Array[Vector2i] = [Vector2i(2,3), Vector2i(2,0), Vector2i(3,0)]
 @export var biome_snow: Array[Vector2i]  = [Vector2i(7,3), Vector2i(9,3)]
 @export var biome_dirt: Array[Vector2i]  = [Vector2i(5,0), Vector2i(5,3), Vector2i(9,0)]
+@export var biome_sand: Array[Vector2i]  = [Vector2i(1, 3)]
 @export var water_tile: Vector2i = Vector2i(1, 1)
 
 # --- OBJECTS ---
@@ -49,5 +50,6 @@ func get_biomes() -> Dictionary:
 	return {
 		"grass": biome_grass,
 		"snow": biome_snow,
-		"dirt": biome_dirt
+		"dirt": biome_dirt,
+		"sand": biome_sand
 	}

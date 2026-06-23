@@ -11,11 +11,12 @@ extends ColorRect
 var biome_colors = {
 	"grass": Color("#e39c2f"),
 	"snow":  Color("#ffffff"), # Thêm màu trắng của tuyết
-	"dirt":  Color("#634832")
+	"dirt":  Color("#634832"),
+	"sand": Color("#f6d7b0")
 }
 
 # Màu riêng cho nước
-var water_color = Color("#3282a8") 
+var water_color = Color("35c4ba") 
 
 # Lưu trữ các ô đã đi qua
 var discovered_cells: Dictionary = {}

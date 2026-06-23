@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://cus0a667ydguj"]
+[gd_scene load_steps=14 format=3 uid="uid://cus0a667ydguj"]
 
 [ext_resource type="TileSet" uid="uid://0u8hh8mx7hqj" path="res://Resources/World.tres" id="1_5cjrv"]
 [ext_resource type="Script" uid="uid://dhqx1aw1r1gr5" path="res://Scripts/World/tile_map.gd" id="1_p70al"]
@@ -9,7 +9,13 @@
 [ext_resource type="Script" uid="uid://d31bfp0sh33xx" path="res://Scripts/World/chunk_manager.gd" id="5_7yo87"]
 [ext_resource type="Script" uid="uid://c6vyy7vvq7gcb" path="res://Scripts/World/spawner.gd" id="6_ti1bm"]
 [ext_resource type="Script" uid="uid://ibk6rusiy4hq" path="res://Scripts/World/hover_manager.gd" id="7_op4cu"]
+[ext_resource type="Texture2D" uid="uid://coww5lumogws8" path="res://Assets/Tileset/Pixel Isometric 16x16/Tiles.png" id="8_7yo87"]
 [ext_resource type="Script" uid="uid://cccbvw43wgbe8" path="res://Scripts/dynamic_camera.gd" id="9_ti1bm"]
+[ext_resource type="PackedScene" uid="uid://dr86xjpqn4peh" path="res://Scenes/day_night_manager.tscn" id="12_ti1bm"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ti1bm"]
+atlas = ExtResource("8_7yo87")
+region = Rect2(32, 16, 16, 16)
 
 [node name="Root" type="Node2D"]
 y_sort_enabled = true
@@ -38,15 +44,10 @@ script = ExtResource("6_ti1bm")
 
 [node name="HoverManager" type="Node" parent="TileMap"]
 script = ExtResource("7_op4cu")
+hover_texture = SubResource("AtlasTexture_ti1bm")
 
 [node name="Player" parent="." instance=ExtResource("3_5nsto")]
 position = Vector2(-16, -7)
-
-[node name="CanvasLayer" parent="." instance=ExtResource("4_gjpho")]
-
-[node name="Minimap" parent="CanvasLayer/PanelContainer" index="0" node_paths=PackedStringArray("tile_map", "player")]
-tile_map = NodePath("../../../TileMap")
-player = NodePath("../../../Player")
 
 [node name="Camera2D" type="Camera2D" parent="." node_paths=PackedStringArray("player")]
 physics_interpolation_mode = 1
@@ -54,6 +55,14 @@ position = Vector2(-16, -7)
 zoom = Vector2(5, 5)
 script = ExtResource("9_ti1bm")
 player = NodePath("../Player/VisualRoot/Sprite2D")
+
+[node name="CanvasLayer" parent="." instance=ExtResource("4_gjpho")]
+
+[node name="Minimap" parent="CanvasLayer/PanelContainer" index="0" node_paths=PackedStringArray("tile_map", "player")]
+tile_map = NodePath("../../../TileMap")
+player = NodePath("../../../Player")
+
+[node name="DayNightManager" parent="." instance=ExtResource("12_ti1bm")]
 
 [editable path="Player"]
 [editable path="CanvasLayer"]

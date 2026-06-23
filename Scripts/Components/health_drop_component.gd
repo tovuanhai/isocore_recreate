@@ -81,3 +81,4 @@ func _cleanup_map_data(parent_obj: Node2D) -> void:
 			if tile_map.spawned_objects.has(cell): 
 				tile_map.spawned_objects.erase(cell)
 			tile_map._refresh_astar(cell)
+			#tile_map.hover_manager.force_update_hover()

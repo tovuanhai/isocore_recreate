@@ -1,6 +1,7 @@
-[gd_scene load_steps=25 format=3 uid="uid://dw82ffshcw0we"]
+[gd_scene load_steps=30 format=3 uid="uid://dw82ffshcw0we"]
 
 [ext_resource type="Script" uid="uid://d0v5351220yqk" path="res://Scripts/player.gd" id="1_kyqiw"]
+[ext_resource type="Shader" uid="uid://hh5b5281ovje" path="res://Resources/Shaders/isometric_shadow.gdshader" id="2_arntx"]
 [ext_resource type="Texture2D" uid="uid://bhr64sqblr6fa" path="res://Assets/Character/Cat_1_spritesheet_free.png" id="2_kyqiw"]
 [ext_resource type="Texture2D" uid="uid://dsjc1i52lgbev" path="res://Assets/Character/Cat_1_spritesheet_free_normal.png" id="3_gntrk"]
 [ext_resource type="Script" uid="uid://bt6juh7vue6re" path="res://Scripts/StateManager/state_machine.gd" id="4_dewec"]
@@ -12,9 +13,18 @@
 [ext_resource type="Script" uid="uid://dn3vgcldx2bgn" path="res://Scripts/input_handler.gd" id="10_yoq75"]
 [ext_resource type="Script" uid="uid://csckkbmwk5jow" path="res://Scripts/Components/PlayerInventoryComponent.gd" id="11_ksbbd"]
 [ext_resource type="Script" uid="uid://cwq1fsprt48k4" path="res://Scripts/Components/PlayerBuilderComponent.gd" id="12_glx4g"]
+[ext_resource type="Script" uid="uid://bkjik520ffigr" path="res://Scripts/Components/player_crafting_component.gd" id="13_miouo"]
+[ext_resource type="Resource" uid="uid://lppluodgpmde" path="res://Resources/Items/test_hand.tres" id="14_1e7my"]
+[ext_resource type="Resource" uid="uid://csjeotbto7qcs" path="res://Resources/Items/test_bench.tres" id="15_arntx"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_kyqiw"]
 radius = 2.23607
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_lslt6"]
+shader = ExtResource("2_arntx")
+shader_parameter/shadow_color = Color(0, 0, 0, 0.45)
+shader_parameter/base_y = 0.0
+shader_parameter/obj_height = 32.0
 
 [sub_resource type="CanvasTexture" id="CanvasTexture_dewec"]
 diffuse_texture = ExtResource("2_kyqiw")
@@ -202,6 +212,15 @@ shape = SubResource("CircleShape2D_kyqiw")
 [node name="VisualRoot" type="Node2D" parent="."]
 y_sort_enabled = true
 
+[node name="Sprite2D2" type="Sprite2D" parent="VisualRoot"]
+material = SubResource("ShaderMaterial_lslt6")
+texture = SubResource("CanvasTexture_dewec")
+centered = false
+offset = Vector2(-16, -26)
+hframes = 32
+vframes = 2
+frame = 4
+
 [node name="Sprite2D" type="Sprite2D" parent="VisualRoot"]
 texture = SubResource("CanvasTexture_dewec")
 centered = false
@@ -240,6 +259,11 @@ script = ExtResource("11_ksbbd")
 
 [node name="PlayerBuilderComponent" type="Node" parent="."]
 script = ExtResource("12_glx4g")
+
+[node name="PlayerCraftingComponent" type="Node" parent="."]
+script = ExtResource("13_miouo")
+test_recipe_hand = ExtResource("14_1e7my")
+test_recipe_bench = ExtResource("15_arntx")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 libraries = {

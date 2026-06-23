@@ -1,9 +1,16 @@
-[gd_scene load_steps=3 format=3 uid="uid://htlsxdaclt2f"]
+[gd_scene load_steps=5 format=3 uid="uid://htlsxdaclt2f"]
 
 [ext_resource type="Script" uid="uid://dlp0f8la2aryn" path="res://Scripts/World/ground_item.gd" id="1_4or6o"]
+[ext_resource type="Shader" uid="uid://hh5b5281ovje" path="res://Resources/Shaders/isometric_shadow.gdshader" id="2_7m7j7"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_sw83q"]
 radius = 6.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_nbdc3"]
+shader = ExtResource("2_7m7j7")
+shader_parameter/shadow_color = Color(0, 0, 0, 0.45)
+shader_parameter/base_y = 0.0
+shader_parameter/obj_height = 32.0
 
 [node name="GroundItem" type="Area2D"]
 z_index = 1
@@ -15,6 +22,13 @@ script = ExtResource("1_4or6o")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_sw83q")
 
+[node name="Sprite2D2" type="Sprite2D" parent="." groups=["isometric_shadows"]]
+material = SubResource("ShaderMaterial_nbdc3")
+
 [node name="Sprite2D" type="Sprite2D" parent="."]
+
+[node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="."]
+position = Vector2(9.53674e-07, -9.53674e-07)
+scale = Vector2(1, 1)
 
 [connection signal="body_entered" from="." to="." method="_on_body_entered"]

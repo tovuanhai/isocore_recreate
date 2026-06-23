@@ -56,3 +56,5 @@ signal drop_item_requested(item_data: ItemData, quantity: int, durability: int)
 
 signal chest_opened(chest_inventory: Inventory, player_inventory: Inventory)
 signal chest_closed()
+
+signal crafting_station_opened(station_type: int)

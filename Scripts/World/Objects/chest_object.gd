@@ -11,8 +11,13 @@ var current_health: int # Máu hiện tại
 
 func _ready() -> void:
 	y_sort_enabled = true
-	current_health = max_health # 🎯 Nạp đầy máu khi vừa đặt xuống
+	current_health = max_health 
 	_ensure_inventory()
+	
+	# 🎯 Nối dây tín hiệu từ cái Mắt thần vào Rương
+	var interact_comp = get_node_or_null("InteractComponent")
+	if interact_comp:
+		interact_comp.interacted.connect(_on_chest_interacted)
 
 func _ensure_inventory() -> void:
 	if chest_inventory == null:
@@ -59,19 +64,16 @@ func break_object() -> void:
 		
 	_cleanup_map_data()
 	queue_free()
-
-# ==============================================================================
-# MỞ HÒM (BẤM E) VÀ CÁC HÀM PHỤ TRỢ
-# ==============================================================================
-
-func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("interact"):
-		_ensure_inventory()
-		var players = get_tree().get_nodes_in_group("player")
-		if players.size() > 0 and global_position.distance_to(players[0].global_position) <= INTERACT_DISTANCE:
-			print("=> 🟢 Đã mở hòm! Rương hiện có: ", chest_inventory.size, " ô.")
-			# 🚧 Gọi tín hiệu mở UI ở đây sau này!
-			get_viewport().set_input_as_handled()
+	
+# Hàm này sẽ được gọi khi Mèo chỉ chuột vào Rương và bấm E
+func _on_chest_interacted() -> void:
+	_ensure_inventory()
+	var players = get_tree().get_nodes_in_group("player")
+	if players.size() > 0:
+		var player_inv_comp = players[0].get_node_or_null("PlayerInventoryComponent")
+		if player_inv_comp:
+			# Bắn loa gọi UI mở cả 2 hòm lên
+			GameEvents.chest_opened.emit(chest_inventory, player_inv_comp.inventory)
 
 func _spawn_dropped_item(item: ItemData, amount: int, dur: int) -> void:
 	if GROUND_ITEM_SCENE == null or item == null: return

@@ -22,14 +22,12 @@ func _ready() -> void:
 	
 	# TEST: Tự động nhét hòm vào túi
 	var test_chest = load("res://Resources/Items/wooden_chest.tres")
-	var test_pickaxe = load("res://Resources/Items/stone_pickaxe.tres")
-	var test_shovel = load("res://Resources/Items/wooden_shovel.tres")
-	if test_shovel:
-		inventory.add_item(test_shovel, 1)
+	var test_bench = load("res://Resources/Items/wooden_bench.tres")
+	if test_bench:
+		inventory.add_item(test_bench, 1)
 	if test_chest:
 		inventory.add_item(test_chest, 1)
-	if test_pickaxe:
-		inventory.add_item(test_pickaxe, 1)
+
 
 
 # ---------------------------------------------------------------------------
@@ -57,9 +55,9 @@ func get_equipped_item() -> ItemData:
 # ---------------------------------------------------------------------------
 # Xử lý Input Hotbar & Drop
 # ---------------------------------------------------------------------------
-func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("ui_accept"):  # Enter — xem túi đồ khi test
-		inventory.print_contents()
+#func _unhandled_input(event: InputEvent) -> void:
+	#if event.is_action_pressed("ui_accept"):  # Enter — xem túi đồ khi test
+		#inventory.print_contents()
 
 func _input(event: InputEvent) -> void:
 	# 1. Phím số

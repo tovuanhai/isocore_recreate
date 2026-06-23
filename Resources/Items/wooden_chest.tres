@@ -16,6 +16,6 @@ description = "A chest made of wood, can store up to 20 slots"
 icon = SubResource("AtlasTexture_7nt1f")
 type = 5
 max_stack = 64
-is_stackable = true
+is_stackable = false
 object_scene = ExtResource("2_7nt1f")
 metadata/_custom_type_script = "uid://dm2yqhxvqb5iw"

@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=5 format=3 uid="uid://bo54m6g83yn27"]
+
+[ext_resource type="Texture2D" uid="uid://opjde3sqhxan" path="res://Assets/Tileset/Pixel Isometric 16x16/Tiles2.png" id="1_gkxc0"]
+[ext_resource type="Script" uid="uid://dm2yqhxvqb5iw" path="res://Scripts/Items/ItemData.gd" id="1_necfg"]
+[ext_resource type="PackedScene" uid="uid://d0f5ixbpxfkcj" path="res://Scenes/Objects/WoodenBench.tscn" id="1_yvir4"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_8lymi"]
+atlas = ExtResource("1_gkxc0")
+region = Rect2(144, 80, 16, 16)
+
+[resource]
+script = ExtResource("1_necfg")
+id = &"wooden_bench"
+display_name = "Wooden Workbench"
+description = "Workbench made of wood, can craft simple things"
+icon = SubResource("AtlasTexture_8lymi")
+type = 5
+max_stack = 64
+is_stackable = false
+object_scene = ExtResource("1_yvir4")
+metadata/_custom_type_script = "uid://dm2yqhxvqb5iw"

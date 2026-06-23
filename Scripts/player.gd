@@ -6,6 +6,7 @@ extends CharacterBody2D
 @onready var tile_map_node: Node2D = $"../TileMap"
 @onready var visual_root: Node2D = $VisualRoot
 @onready var sprite: Sprite2D = $VisualRoot/Sprite2D
+@onready var sprite2 = $VisualRoot/Sprite2D2
 
 #@export var inventory: Inventory
 
@@ -47,10 +48,6 @@ func _ready() -> void:
 
 	self.modulate = Color.WHITE
 
-	# 🎯 ĐÃ THÊM: Tự động khởi tạo Nam Châm Hút Đồ bằng Code 100% sạch sẽ
-	# Không bắt ông phải vào Editor tạo bằng tay, tránh lỗi cấu hình sai Layer/Mask
-	#_setup_magnet_physics()
-
 	GameEvents.tile_hit.connect(_on_player_interact)
 
 func get_visual_position() -> Vector2:
@@ -70,6 +67,7 @@ func _process(_delta: float) -> void:
 	var visual_offset_y = -(elevation_float * float(cliff_height))
 	if sprite:
 		sprite.position = Vector2(sprite_fix_x, visual_offset_y + sprite_fix_y)
+		sprite2.position = Vector2(sprite_fix_x, visual_offset_y + sprite_fix_y)
 	if col_shape:
 		col_shape.position.y = visual_offset_y
 		
@@ -84,9 +82,6 @@ func _process(_delta: float) -> void:
 
 func get_inventory() -> Inventory:
 	return $PlayerInventoryComponent.get_inventory()
-
-
-
 
 # ============================================================
 # PUBLIC HELPERS
@@ -110,7 +105,6 @@ func get_current_cell() -> Vector2i:
 	return tile_map_node.base_ground.local_to_map(
 		tile_map_node.base_ground.to_local(global_position)
 	)
-
 
 # ============================================================
 # ELEVATION

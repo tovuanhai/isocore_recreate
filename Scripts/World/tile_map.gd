@@ -45,12 +45,10 @@ var object_scenes: Array[String]:
 # --- RUNTIME DATA ---
 var ground_layers: Array[TileMapLayer] = []
 var object_layers: Array[TileMapLayer] = []
+var water_layers: Array[TileMapLayer] = []
 var spawned_objects: Dictionary = {}
 var world_data: Dictionary = {}
-
-# 🎯 ĐÃ SẠCH SẼ: Chỉ còn lưu máu của ĐẤT (Vì đất không có Component)
 var ground_durability: Dictionary = {} 
-
 
 func _ready() -> void:
 	y_sort_enabled = true
@@ -62,7 +60,7 @@ func _ready() -> void:
 	hover_manager.initialize(self)
 
 	world_generator.setup_noises()
-	hover_manager.setup_hover_polygon()
+	hover_manager.setup_hover_effect()
 	if player:
 		spawner.setup_safe_spawn()
 
@@ -73,20 +71,32 @@ func setup_elevation_layers() -> void:
 	y_sort_enabled = true
 	ground_layers.clear()
 	object_layers.clear()
+	water_layers.clear()
 
 	for i in range(max_elevation + 1):
 		var g_layer: TileMapLayer
 		var o_layer: TileMapLayer
+		var w_layer: TileMapLayer
 
 		if i == 0:
 			g_layer = base_ground
 			o_layer = base_object
 			o_layer.clear()
+
+			w_layer = base_ground.duplicate()
+			w_layer.clear()
+			w_layer.name = "WaterLayer_0"
+			add_child(w_layer)
 		else:
 			g_layer = base_ground.duplicate()
 			g_layer.clear()
 			g_layer.name = "GroundLayer_" + str(i)
 			add_child(g_layer)
+
+			w_layer = base_ground.duplicate()
+			w_layer.clear()
+			w_layer.name = "WaterLayer_" + str(i)
+			add_child(w_layer)
 
 			o_layer = base_object.duplicate()
 			o_layer.clear()
@@ -94,34 +104,59 @@ func setup_elevation_layers() -> void:
 			add_child(o_layer)
 
 		var elev_shift = cliff_height * i
+
 		g_layer.position.y = -elev_shift
+		w_layer.position.y = -elev_shift
 		o_layer.position.y = -elev_shift
+
 		g_layer.y_sort_origin = elev_shift
+		w_layer.y_sort_origin = elev_shift
 		o_layer.y_sort_origin = elev_shift
+
 		g_layer.z_index = 0
+		w_layer.z_index = 0
 		o_layer.z_index = 0
+
 		g_layer.y_sort_enabled = true
+		w_layer.y_sort_enabled = true
 		o_layer.y_sort_enabled = true
 
-		var t: float = float(i) / max_elevation
-		var brightness: float = lerp(0.58, 1.0, t)
-		var mod_color := Color(brightness, brightness * 0.97, brightness * 0.93, 1.0)
+		# 🎯 1. ĐẤT TRÊN BỜ VÀ DƯỚI ĐÁY ĐỀU SÁNG ĐẸP (Không bị bùn đen)
+		g_layer.self_modulate = Color(1.0, 1.0, 1.0, 1.0) 
 
-		if i < water_level:
-			var layer_color_increase: float = 1.0 - (float(i) / float(water_level))
-			mod_color = mod_color.lerp(deep_water_color, layer_color_increase)
+		# =================================================================
+		# 🎯 CHUẨN JOHNBRX: LẤY MÀU NƯỚC CỦA CHÍNH ÔNG VÀ CHỈNH LẠI ĐỘ TRONG
+		# =================================================================
+		if i <= water_level:
+			# 1. Tính toán độ sâu (4 block là chạm mốc tối đa)
+			var blocks_deep = water_level - i
+			var max_dark_depth = 4.0
+			var depth_ratio = clampf(float(blocks_deep) / max_dark_depth, 0.0, 1.0)
+			
+			# 2. ĐẤT: Nhuộm dần sang màu deep_water_color (Màu ông cấu hình trong WorldConfig)
+			g_layer.self_modulate = Color(1.0, 1.0, 1.0, 1.0).lerp(deep_water_color, depth_ratio)
+			
+			# 3. NƯỚC: Mở khóa độ trong suốt!
+			if i == water_level:
+				# Vì file ảnh của ông đã ĐẶC 100%, ta PHẢI bóp Alpha xuống 0.45 ở đây
+				# Lúc này nó mới biến thành kính trong suốt để ông nhìn thấu xuống đáy!
+				w_layer.self_modulate = Color(1.0, 1.0, 1.0, 0.45)
+			else:
+				w_layer.self_modulate = Color(1.0, 1.0, 1.0, 0.0)
+		else:
+			g_layer.self_modulate = Color(1.0, 1.0, 1.0, 1.0)
+			w_layer.self_modulate = Color(1.0, 1.0, 1.0, 0.0)
 
-		g_layer.self_modulate = mod_color
 		ground_layers.append(g_layer)
+		water_layers.append(w_layer)
 		object_layers.append(o_layer)
+
+		move_child(w_layer, g_layer.get_index() + 1)
 		move_child(base_object, -1)
 
-# ============================================================
-# PUBLIC API
-# ============================================================
 
 func get_hovered_tile() -> Vector2i:
-	return hover_manager.get_hovered_tile()
+	return hover_manager.get_hovered_tile(get_global_mouse_position())
 
 func get_cell_elevation(cell: Vector2i) -> int:
 	if world_data.has(cell):
@@ -131,31 +166,19 @@ func get_cell_elevation(cell: Vector2i) -> int:
 func has_obstacle(cell: Vector2i, elevation: int) -> bool:
 	return hover_manager.has_obstacle(cell, elevation)
 
-# ============================================================
-# A*
-# ============================================================
-
 func _refresh_astar(cell: Vector2i) -> void:
 	if not MovementUtils: return
 	MovementUtils.update_cell_pathfinding(self, cell)
 	for dir in [Vector2i(1,0), Vector2i(-1,0), Vector2i(0,1), Vector2i(0,-1)]:
 		MovementUtils.update_cell_pathfinding(self, cell + dir)
 
-
-# ============================================================
-# INTERACT HANDLER
-# ============================================================
-
-# 🎯 ĐÃ ĐƯỢC LÀM SẠCH VÀ TỐI ƯU
 func _on_player_interact(_player: Node2D, cell: Vector2i, action_type: String, damage: int) -> void:
 	if not world_data.has(cell): return
 
-	# 1. Tính toán Tọa độ Mắt nhìn (Để bắn bụi VFX)
 	var cell_local = base_ground.map_to_local(cell)
 	var vfx_global = base_ground.to_global(cell_local)
 	vfx_global.y -= (world_data[cell]["z"] * cliff_height)
 
-	# 2. Xử lý logic ĐẮP ĐẤT (Build Ground)
 	if action_type == "build_ground":
 		var data = world_data[cell]
 		if data["z"] >= max_elevation or data.get("object", "none") != "none": return
@@ -171,28 +194,22 @@ func _on_player_interact(_player: Node2D, cell: Vector2i, action_type: String, d
 
 		GameEvents.tile_hit_vfx.emit(vfx_global, "mine_ground", null)
 		_refresh_astar(cell)
+		
+		# 🎯 Cập nhật lại khung viền ngay lập tức
+		hover_manager.force_update_hover()
 		return
 
-	# 3. Xử lý logic ĐÀO ĐẤT (Mine Ground)
-	# Máu của Object giờ do HealthDropComponent tự quản lý, TileMap chỉ quản lý máu Đất.
 	if action_type == "mine_ground":
 		var hp_key = str(cell)
 		if not ground_durability.has(hp_key):
-			ground_durability[hp_key] = 2 # Đất cần 2 hit để vỡ
+			ground_durability[hp_key] = 2 
 			
 		ground_durability[hp_key] -= damage
-		
-		# Bắn VFX bụi đất
 		GameEvents.tile_hit_vfx.emit(vfx_global, action_type, null)
 
 		if ground_durability[hp_key] <= 0:
 			ground_durability.erase(hp_key)
 			_destroy_ground_at_cell(cell)
-
-
-# ============================================================
-# DESTROY HANDLERS
-# ============================================================
 
 func _destroy_ground_at_cell(cell: Vector2i) -> void:
 	var data = world_data[cell]
@@ -200,22 +217,19 @@ func _destroy_ground_at_cell(cell: Vector2i) -> void:
 
 	if current_z <= water_level: return
 
-	# Tọa độ toán học gốc để rớt đồ chuẩn xác hít Y-Sort
 	var pure_cell_global = base_ground.to_global(base_ground.map_to_local(cell))
-
-	# Sinh 1-3 cục Dirt
 	var drop_count = randi_range(1, 3)
 	for _i in drop_count:
 		LootSpawner.spawn_item("dirt", 1, pure_cell_global)
 
-	# Dọn dẹp Layer
 	ground_layers[current_z].set_cell(cell, -1)
 	data["z"] -= 1
 
-	# Biến thành nước nếu đào thủng đáy
 	if data["z"] <= water_level:
 		data["is_water"] = true
 		data["biome"] = "dirt"
-		ground_layers[water_level].set_cell(cell, 0, water_tile)
+		# 🎯 Đập lủng rớt xuống nước thì vẽ mặt nước vào Water Layer
+		water_layers[water_level].set_cell(cell, 0, water_tile)
 
 	_refresh_astar(cell)
+	hover_manager.force_update_hover()
