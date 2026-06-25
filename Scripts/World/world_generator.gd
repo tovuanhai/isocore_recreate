@@ -9,6 +9,7 @@ var continental_noise: FastNoiseLite
 var erosion_noise: FastNoiseLite
 var weirdness_noise: FastNoiseLite
 var micro_noise: FastNoiseLite
+var lake_noise: FastNoiseLite
 
 # ============================================================
 # 2. NHÓM NOISE KHÍ HẬU (BIOMES & VEGETATION)
@@ -27,13 +28,22 @@ func setup_noises() -> void:
 	continental_noise = FastNoiseLite.new()
 	continental_noise.seed = randi()
 	continental_noise.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
-	continental_noise.frequency = 0.008 
+	continental_noise.frequency = 0.001
 
 	erosion_noise = FastNoiseLite.new()
 	erosion_noise.seed = randi() + 123
 	erosion_noise.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
-	erosion_noise.frequency = 0.01
+	erosion_noise.frequency = 0.01 # Trả lại 0.01 để đồi núi uốn lượn đẹp như cũ
 
+	# =========================================================
+	# 🎯 ĐÃ THÊM: Nhiễu ĐỘC LẬP dành riêng cho Hồ Nước
+	# =========================================================
+	lake_noise = FastNoiseLite.new()
+	lake_noise.seed = randi() + 888
+	lake_noise.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
+	lake_noise.frequency = 0.02
+	lake_noise.fractal_type = FastNoiseLite.FRACTAL_NONE
+	
 	weirdness_noise = FastNoiseLite.new()
 	weirdness_noise.seed = randi() + 456
 	weirdness_noise.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
@@ -44,15 +54,15 @@ func setup_noises() -> void:
 	micro_noise.frequency = 0.005
 
 	# =========================================================
-	# 🎯 ĐÃ SỬA: Ép Frequency siêu nhỏ để mảng Biome khổng lồ
+	# 🎯 ĐÃ SỬA: Ép Frequency SIÊU NHỎ (0.003) để mảng Biome siêu to
 	# =========================================================
 	temperature_noise = FastNoiseLite.new()
 	temperature_noise.seed = randi() + 1011
-	temperature_noise.frequency = 0.02 # Số càng nhỏ, mảng Cỏ/Tuyết càng to
+	temperature_noise.frequency = 0.003 # Giảm từ 0.02 xuống 0.003
 
 	humidity_noise = FastNoiseLite.new()
 	humidity_noise.seed = randi() + 1213
-	humidity_noise.frequency = 0.02 
+	humidity_noise.frequency = 0.003 # Giảm từ 0.02 xuống 0.003
 
 	density_noise = FastNoiseLite.new()
 	density_noise.seed = randi() + 999
@@ -60,18 +70,16 @@ func setup_noises() -> void:
 	density_noise.fractal_type = FastNoiseLite.FRACTAL_FBM
 
 
-# ============================================================
-# 🎯 HỆ THỐNG ĐỊA HÌNH PHA TRỘN MƯỢT MÀ (FULL BLEND)
-# Đã tích hợp Vuốt mượt Bờ Biển và Bờ Hồ
-# ============================================================
 func _get_terrain_data(gx: int, gy: int) -> Dictionary:
 	var cont = (continental_noise.get_noise_2d(gx, gy) + 1.0) / 2.0 
 	var temp = temperature_noise.get_noise_2d(gx, gy) 
 	var hum = humidity_noise.get_noise_2d(gx, gy)
 	var micro = micro_noise.get_noise_2d(gx, gy)
 	
-	# Lấy thêm giá trị Xói mòn (Erosion) để tính Hồ
 	var ero = (erosion_noise.get_noise_2d(gx, gy) + 1.0) / 2.0
+	
+	# 🎯 ĐÃ THÊM: Tính toán giá trị Hồ độc lập
+	var lake_val = (lake_noise.get_noise_2d(gx, gy) + 1.0) / 2.0
 
 	var wl = float(hub.water_level)
 	var max_e = float(hub.max_elevation)
@@ -85,31 +93,30 @@ func _get_terrain_data(gx: int, gy: int) -> Dictionary:
 	if cont < 0.35:
 		var depth_curve = cont / 0.35
 		final_z = lerpf(0.0, wl - 1.0, pow(depth_curve, 1.5)) + (micro * 1.5)
-		return { "z": clampi(roundi(final_z), 0, hub.max_elevation), "biome": "dirt", "is_water": true }
+		return { "z": clampi(roundi(final_z), 0, hub.max_elevation), "biome": "dirt", "is_water": true, "is_lake_zone": false }
 
-	if ero > 0.75:
-		var lake_depth = (ero - 0.75) / 0.25
+	# 🎯 ĐÃ SỬA: Dùng lake_val để tạo hồ thay vì ero
+	if lake_val > 0.75:
+		# Nhớ sửa số 0.75 và 0.25 (vì 1.0 - 0.75 = 0.25)
+		var lake_depth = (lake_val - 0.75) / 0.25
 		final_z = lerpf(wl - 1.0, 2.0, pow(lake_depth, 0.8)) + (micro * 1.5)
-		return { "z": clampi(roundi(final_z), 0, hub.max_elevation), "biome": "dirt", "is_water": true }
+		return { "z": clampi(roundi(final_z), 0, hub.max_elevation), "biome": "dirt", "is_water": true, "is_lake_zone": true, "ero": lake_val }
 
 	# ----------------------------------------------------
 	# 2. TÍNH TOÁN 3 LOẠI ĐỊA HÌNH ĐỘC LẬP
 	# ----------------------------------------------------
 	var base_land_z = wl + 1.0 
 
-	# 🏔️ Địa hình Tuyết 
 	var w = weirdness_noise.get_noise_2d(gx, gy)
 	var sharp = pow(clampf((1.0 - abs(w)) + micro * 0.3, 0.0, 1.0), 2.5)
 	var h_snow = base_land_z + 3.0 + (sharp * (max_e - base_land_z - 3.0))
-	if h_snow > base_land_z + 4.0:
+	if h_snow > base_land_z + 2.0:
 		h_snow = lerpf(h_snow, roundf(h_snow / 3.0) * 3.0, 0.8)
 
-	# 🌿 Địa hình Cỏ 
 	var rolling = (erosion_noise.get_noise_2d(gx * 1.5, gy * 1.5) + 1.0) / 2.0
 	var h_grass = base_land_z + (rolling * 6.0) + (micro * 1.5)
 	h_grass = lerpf(h_grass, roundf(h_grass / 2.0) * 2.0, 0.4)
 
-	# 🏜️ Địa hình Cát 
 	var dune = sin(gx * 0.1 + micro * 5.0) * 0.5 + 0.5
 	var h_sand = base_land_z + (dune * 2.0)
 
@@ -117,39 +124,40 @@ func _get_terrain_data(gx: int, gy: int) -> Dictionary:
 	# 3. TRỘN (BLEND) GIỮA CÁC BIOME
 	# ----------------------------------------------------
 	var snow_weight = 1.0 - smoothstep(-0.35, -0.15, temp)
-	
-	var sand_weight = 0.0
-	if hum < 0.2:
-		sand_weight = smoothstep(0.2, 0.4, temp) * (1.0 - smoothstep(0.05, 0.2, hum))
+	var sand_weight = smoothstep(0.05, 0.25, temp) * (1.0 - smoothstep(-0.2, 0.1, hum))
 		
 	var grass_weight = clampf(1.0 - snow_weight - sand_weight, 0.0, 1.0)
 	var blended_h = (h_snow * snow_weight) + (h_grass * grass_weight) + (h_sand * sand_weight)
 
 	if snow_weight > 0.5: biome = "snow"
-	elif sand_weight > 0.5: biome = "sand"
+	elif sand_weight > 0.4: biome = "sand" 
 	else: biome = "grass"
 
 	# ----------------------------------------------------
-	# 4. MẶT NẠ BỜ NƯỚC (WATER SHORE MASK) - ÉP PHẲNG VÁCH ĐÁ
+	# 4. MẶT NẠ BỜ NƯỚC (WATER SHORE MASK)
 	# ----------------------------------------------------
-	# Tạo dải chuyển tiếp (Transition Zone) rộng hơn để đồi núi từ từ hạ thấp
-	var coast_mask = smoothstep(0.35, 0.45, cont)      # 0 ở mép biển, 1 ở tít đất liền
-	var lake_shore_mask = smoothstep(0.65, 0.75, ero)  # 0 ở đất liền, 1 ở sát mép hồ
-
-	# Càng gần mép biển (coast_mask -> 0), núi bị ép lùn xuống sát mặt nước
+	var coast_mask = smoothstep(0.35, 0.45, cont)
+	
+	# 🎯 ĐÃ SỬA: Viền bờ hồ giờ nằm trong khoảng 0.65 đến 0.75
+	var lake_shore_mask = smoothstep(0.65, 0.75, lake_val)
 	final_z = lerpf(base_land_z, blended_h, coast_mask)
-
-	# Càng gần mép hồ (lake_shore_mask -> 1), núi cũng bị ép lùn xuống sát mặt nước
 	final_z = lerpf(final_z, base_land_z, lake_shore_mask)
 
-	# Nhuộm Cát Vàng (Hoặc Băng) cho các dải đất ven bờ
+	# 🎯 ĐÃ SỬA: Cờ hiệu vùng ven hồ (Mốc 0.65 là bắt đầu có đất nâu)
+	var is_lake_flag = lake_val > 0.65
+	
 	if final_z <= wl + 1.5:
-		biome = "snow" if temp < -0.25 else "sand"
+		if is_lake_flag:
+			biome = "dirt" 
+		else:
+			biome = "snow" if temp < -0.25 else "sand" 
 
 	return {
 		"z": clampi(roundi(final_z), 0, hub.max_elevation),
 		"biome": biome,
-		"is_water": false
+		"is_water": false,
+		"is_lake_zone": is_lake_flag,
+		"ero": lake_val # Vẫn return "ero" để tương thích ngược với code sinh cỏ
 	}
 
 # ============================================================
@@ -169,33 +177,89 @@ func generate_chunk_data(chunk_pos: Vector2i) -> Dictionary:
 			# Lấy trọn gói toàn bộ dữ liệu từ 1 hàm duy nhất
 			var terrain_data = _get_terrain_data(global_x, global_y)
 			var biome_name = terrain_data["biome"]
+			var is_water = terrain_data["is_water"]
+			var is_lake_zone = terrain_data.get("is_lake_zone", false) # Lấy mác Vùng Hồ ra
+			var z = terrain_data["z"]
 			var spawn_obj = "none"
+			var ero = terrain_data.get("ero", 0.0)
+			
+			# =========================================================
+			# 🎯 PHÂN BỔ THỰC VẬT VEN HỒ & MẶT NƯỚC
+			# =========================================================
+			if is_water:
+				# Nước hồ thì mọc bèo (GIỮ NGUYÊN)
+				if is_lake_zone:
+					var d_val = density_noise.get_noise_2d(global_x * 3.0, global_y * 3.0)
+					if d_val > 0.25 and randf() < 0.7:
+						spawn_obj = "duckweed" 
+			else:
+				# 🎯 ĐÃ SỬA: Logic Cỏ đuôi mèo ven hồ
+				if is_lake_zone and z == hub.water_level + 1 and biome_name == "dirt":
+					
+					var dist_to_water = 0.75 - ero
 
-			# Phân bổ Cây và Đá theo Mật độ
-			if not terrain_data["is_water"] and (biome_name == "grass" or biome_name == "snow"):
-				var tree_type = "Snow_Tree" if biome_name == "snow" else "Grass_Tree"
-				var d_val = density_noise.get_noise_2d(global_x, global_y)
-				var rand = randf()
+					if dist_to_water <= 0.03:
+						if randf() < 0.3: 
+							spawn_obj = "cattail"
+							
+					elif dist_to_water <= 0.08:
+						if randf() < 0.08: 
+							spawn_obj = "cattail"
+				
+				# Rừng / Núi bình thường (GIỮ NGUYÊN CODE CŨ CỦA ÔNG)
+				elif biome_name == "grass" or biome_name == "snow":
+					var tree_type = "Snow_Tree" if biome_name == "snow" else "Grass_Tree"
+					var d_val = density_noise.get_noise_2d(global_x, global_y)
+					var rand = randf()
 
-				if d_val > hub.config.dense_forest_threshold:
-					if rand < hub.config.dense_forest_chance:
-						spawn_obj = tree_type
-				elif d_val < -hub.config.dense_forest_threshold:
-					if rand < hub.config.sparse_rock_chance:
+					if d_val > hub.config.dense_forest_threshold:
+						if rand < hub.config.dense_forest_chance:
+							spawn_obj = tree_type
+					elif d_val < -hub.config.dense_forest_threshold:
+						if rand < hub.config.sparse_rock_chance:
+							spawn_obj = "rock1"
+					else:
+						if rand < hub.config.plain_tree_chance:
+							spawn_obj = tree_type
+						elif rand < hub.config.plain_tree_chance + hub.config.plain_rock_chance:
+							spawn_obj = "rock1"
+							
+				# 🎯 ĐÃ SỬA: Thực vật cho Sa mạc (Cách ly Xương rồng bằng Jitter Grid)
+				elif biome_name == "sand" and z > hub.water_level + 1:
+					
+					# 1. Khởi tạo Lưới ảo 4x4
+					var grid_step = 4
+					var cell_x = floor(global_x / float(grid_step))
+					var cell_y = floor(global_y / float(grid_step))
+					
+					# 2. Tạo một ID cố định nhưng ngẫu nhiên cho mỗi ô lưới
+					var cell_hash = hash(Vector2(cell_x, cell_y))
+					
+					# 3. Chọn 1 điểm mọc xương rồng duy nhất trong ô lưới 4x4.
+					# Phép tính "1 + (hash % 2)" ép tọa độ mọc luôn rơi vào lõi (1 hoặc 2),
+					# cách xa viền ngoài cùng (0 và 3). Đảm bảo 100% không bao giờ mọc dính nhau!
+					var target_x = 1 + (cell_hash % 2)
+					var target_y = 1 + ((cell_hash / 2) % 2)
+					
+					# 4. Nếu block hiện tại trùng đúng với điểm đã được chọn
+					if posmod(global_x, grid_step) == target_x and posmod(global_y, grid_step) == target_y:
+						# Có 65% tỷ lệ ô lưới này được quyền sinh xương rồng
+						# (Tăng giảm con số 0.65 này để chỉnh độ Dày/Thưa tổng thể của sa mạc)
+						if randf() < 0.4: 
+							spawn_obj = "cactus"
+					
+					# 5. Rải thêm vài viên đá vụn rải rác (2% cơ hội)
+					elif randf() < 0.05:
 						spawn_obj = "rock1"
-				else:
-					if rand < hub.config.plain_tree_chance:
-						spawn_obj = tree_type
-					elif rand < hub.config.plain_tree_chance + hub.config.plain_rock_chance:
-						spawn_obj = "rock1"
 
-			# Chỉ Đóng gói Data, không vẽ gì cả
+			# Chỉ Đóng gói Data
 			chunk_data_result[pos_2d] = {
 				"type": "ground",
 				"biome": biome_name,
-				"z": terrain_data["z"],
+				"z": z,
 				"object": spawn_obj,
-				"is_water": terrain_data["is_water"]
+				"is_water": is_water,
+				"is_lake_zone": is_lake_zone
 			}
 			
 	return chunk_data_result

@@ -1,0 +1,40 @@
+[gd_scene load_steps=6 format=3 uid="uid://1pib2udtl5t1"]
+
+[ext_resource type="Texture2D" uid="uid://shgsqbru5qsk" path="res://Assets/Tileset/Pixel Isometric 16x16/Tiles3.png" id="1_ngi13"]
+[ext_resource type="Script" uid="uid://bixptm7w4qh08" path="res://Scripts/objects.gd" id="1_x73os"]
+[ext_resource type="PackedScene" uid="uid://daojqpic6bj2l" path="res://Scenes/Components/HealthDropComponent.tscn" id="2_j8hlq"]
+[ext_resource type="Shader" uid="uid://hh5b5281ovje" path="res://Resources/Shaders/isometric_shadow.gdshader" id="2_n6xje"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_qnhmm"]
+shader = ExtResource("2_n6xje")
+shader_parameter/shadow_color = Color(0, 0, 0, 0.45)
+shader_parameter/base_y = 0.0
+shader_parameter/obj_height = 32.0
+
+[node name="StaticBody2D" type="StaticBody2D"]
+y_sort_enabled = true
+script = ExtResource("1_x73os")
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="."]
+polygon = PackedVector2Array(-7, 0, 0, 4, 7, 0, 0, -4)
+
+[node name="Sprite2D" type="Sprite2D" parent="." groups=["isometric_shadows"]]
+material = SubResource("ShaderMaterial_qnhmm")
+texture = ExtResource("1_ngi13")
+centered = false
+offset = Vector2(-8, -27)
+region_enabled = true
+region_rect = Rect2(0, 0, 16, 32)
+
+[node name="Sprite2D2" type="Sprite2D" parent="."]
+texture = ExtResource("1_ngi13")
+centered = false
+offset = Vector2(-8, -27)
+region_enabled = true
+region_rect = Rect2(0, 0, 16, 32)
+
+[node name="HealthDropComponent" parent="." instance=ExtResource("2_j8hlq")]
+drop_item_id = "stick"
+drop_amount = 4
+
+[node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="."]

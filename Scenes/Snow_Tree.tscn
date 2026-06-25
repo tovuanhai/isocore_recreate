@@ -20,6 +20,10 @@ normal_texture = ExtResource("3_hjtow")
 y_sort_enabled = true
 script = ExtResource("1_e3d2i")
 
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="."]
+position = Vector2(0, -2)
+polygon = PackedVector2Array(0, 5, -7, 2, 0, -1, 7, 2)
+
 [node name="Sprite2D" type="Sprite2D" parent="." groups=["isometric_shadows"]]
 material = SubResource("ShaderMaterial_srw7n")
 texture = ExtResource("2_trtam")
@@ -35,10 +39,6 @@ centered = false
 offset = Vector2(-16, -28)
 region_enabled = true
 region_rect = Rect2(128, 112, 32, 32)
-
-[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="."]
-position = Vector2(0, -2)
-polygon = PackedVector2Array(0, 5, -7, 2, 0, -1, 7, 2)
 
 [node name="HealthDropComponent" parent="." instance=ExtResource("4_e3d2i")]
 max_health = 4

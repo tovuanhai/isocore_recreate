@@ -9,7 +9,7 @@ extends ColorRect
 
 # Bảng màu (Đã thêm Tuyết)
 var biome_colors = {
-	"grass": Color("#e39c2f"),
+	"grass": Color("#62c54f"),
 	"snow":  Color("#ffffff"), # Thêm màu trắng của tuyết
 	"dirt":  Color("#634832"),
 	"sand": Color("#f6d7b0")

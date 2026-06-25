@@ -14,8 +14,8 @@
 [ext_resource type="Script" uid="uid://csckkbmwk5jow" path="res://Scripts/Components/PlayerInventoryComponent.gd" id="11_ksbbd"]
 [ext_resource type="Script" uid="uid://cwq1fsprt48k4" path="res://Scripts/Components/PlayerBuilderComponent.gd" id="12_glx4g"]
 [ext_resource type="Script" uid="uid://bkjik520ffigr" path="res://Scripts/Components/player_crafting_component.gd" id="13_miouo"]
-[ext_resource type="Resource" uid="uid://lppluodgpmde" path="res://Resources/Items/test_hand.tres" id="14_1e7my"]
-[ext_resource type="Resource" uid="uid://csjeotbto7qcs" path="res://Resources/Items/test_bench.tres" id="15_arntx"]
+[ext_resource type="Resource" uid="uid://csjeotbto7qcs" path="res://Resources/Items/recipe_stone_pickaxe.tres" id="15_arntx"]
+[ext_resource type="Resource" uid="uid://csmtsy83ocqdn" path="res://Resources/Items/recipe_wooden_shovel.tres" id="15_lslt6"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_kyqiw"]
 radius = 2.23607
@@ -262,7 +262,7 @@ script = ExtResource("12_glx4g")
 
 [node name="PlayerCraftingComponent" type="Node" parent="."]
 script = ExtResource("13_miouo")
-test_recipe_hand = ExtResource("14_1e7my")
+test_recipe_hand = ExtResource("15_lslt6")
 test_recipe_bench = ExtResource("15_arntx")
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]

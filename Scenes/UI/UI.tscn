@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=3 uid="uid://dm2gsuvv6qynt"]
+[gd_scene load_steps=20 format=3 uid="uid://dm2gsuvv6qynt"]
 
 [ext_resource type="Script" uid="uid://dn2vrqd6uw721" path="res://Scripts/UI/InventoryInterface.gd" id="1_8wlyu"]
 [ext_resource type="FontFile" uid="uid://mkvknh57gn2b" path="res://Assets/UI/Fonts/DFVN Pexel Grotesk.otf" id="1_48q88"]
@@ -14,8 +14,9 @@
 [ext_resource type="PackedScene" uid="uid://cwgidp4kxh6fc" path="res://Scenes/UI/crafting_interface.tscn" id="13_o3jj0"]
 [ext_resource type="PackedScene" uid="uid://8hgyon1kanut" path="res://Scenes/UI/mouse_cursor.tscn" id="13_thdbn"]
 [ext_resource type="Script" uid="uid://b3ayeyrsb5ndm" path="res://Scripts/Items/recipe_data.gd" id="14_813c4"]
-[ext_resource type="Resource" uid="uid://lppluodgpmde" path="res://Resources/Items/test_hand.tres" id="15_jlkmm"]
-[ext_resource type="Resource" uid="uid://csjeotbto7qcs" path="res://Resources/Items/test_bench.tres" id="16_462t7"]
+[ext_resource type="Resource" uid="uid://lppluodgpmde" path="res://Resources/Items/recipe_torch.tres" id="15_jlkmm"]
+[ext_resource type="Resource" uid="uid://csjeotbto7qcs" path="res://Resources/Items/recipe_stone_pickaxe.tres" id="16_462t7"]
+[ext_resource type="Resource" uid="uid://csmtsy83ocqdn" path="res://Resources/Items/recipe_wooden_shovel.tres" id="17_462t7"]
 [ext_resource type="Resource" uid="uid://clahcykxw1ndt" path="res://Resources/Items/recipe_wooden_bench.tres" id="17_jlkmm"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_dewlx"]
@@ -197,6 +198,6 @@ offset_left = 19.0
 offset_top = -251.0
 offset_right = 369.0
 offset_bottom = 249.0
-all_recipes = Array[ExtResource("14_813c4")]([ExtResource("15_jlkmm"), ExtResource("16_462t7"), ExtResource("17_jlkmm")])
+all_recipes = Array[ExtResource("14_813c4")]([ExtResource("15_jlkmm"), ExtResource("16_462t7"), ExtResource("17_jlkmm"), ExtResource("17_462t7")])
 
 [node name="MouseCursor" parent="." instance=ExtResource("13_thdbn")]

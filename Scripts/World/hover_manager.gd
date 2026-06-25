@@ -68,20 +68,25 @@ func get_hovered_tile(mouse_pos: Vector2) -> Vector2i:
 				
 	return Vector2i(-9999, -9999)
 
-# ==========================================
-# 🎯 HÀM PHỤ: GẮN/XÓA VIỀN CHO OBJECT
-# ==========================================
 func _apply_outline(obj: Node) -> void:
 	if not is_instance_valid(obj): return
 	for child in obj.get_children():
 		if child is Sprite2D or child is AnimatedSprite2D:
+			# 🎯 NẾU ĐANG CHỚP TRẮNG: Giữ nguyên vật liệu chớp trắng, cấm đè viền outline lên!
+			if child.has_meta("is_flashing") and child.get_meta("is_flashing") == true:
+				break
+				
 			child.material = outline_material
-			break # Chỉ tô viền lớp Sprite đầu tiên tìm thấy
+			break 
 
 func _remove_outline(obj: Node) -> void:
 	if not is_instance_valid(obj): return
 	for child in obj.get_children():
 		if child is Sprite2D or child is AnimatedSprite2D:
+			# 🎯 NẾU ĐANG CHỚP TRẮNG: Tuyệt đối không được xóa vật liệu về null!
+			if child.has_meta("is_flashing") and child.get_meta("is_flashing") == true:
+				break
+				
 			child.material = null
 			break
 

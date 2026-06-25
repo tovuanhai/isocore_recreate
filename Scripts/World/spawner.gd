@@ -53,7 +53,6 @@ func render_voxel_column(pos_2d: Vector2i) -> void:
 	# 1. VẼ ĐẤT/ĐÁ (Vẽ từ start_h lên tới z)
 	for h in range(start_h, z + 1):
 		var current_biome = "dirt"
-		# Chỉ lợp cỏ/cát/tuyết ở bề mặt trên cùng trên cạn
 		if h == z and not is_water:
 			current_biome = data["biome"]
 			
@@ -75,7 +74,17 @@ func render_voxel_column(pos_2d: Vector2i) -> void:
 	# 3. SINH ĐỒ VẬT
 	if data.has("object") and data["object"] != "none":
 		if hub.object_scenes.has(data["object"]) and not hub.spawned_objects.has(pos_2d):
-			spawn_object_scene(pos_2d, data["object"], z)
+			# 🎯 Bèo thì phải nổi ở mặt nước (water_level), cây cối trên bờ thì lấy z bề mặt
+			var obj_z = hub.water_level if is_water else z
+			spawn_object_scene(pos_2d, data["object"], obj_z)
+
+	# =========================================================
+	# 🎯 4. ĐÃ SỬA: GỌI HÀM KẺ VIỀN SAU KHI VẼ XONG MỌI THỨ
+	# =========================================================
+	update_cell_highlight(pos_2d)
+	# Cập nhật luôn 2 ô phía trước mặt để vá lỗi rách viền ở ranh giới Chunk
+	update_cell_highlight(pos_2d + Vector2i(1, 0))
+	update_cell_highlight(pos_2d + Vector2i(0, 1))
 
 # ==============================================================================
 # HÀM SINH/HỦY OBJECT GỐC (DÙNG INSTANTIATE TRUYỀN THỐNG)
@@ -104,8 +113,9 @@ func unload_chunk_visuals(chunk_pos: Vector2i) -> void:
 			var cell = Vector2i(start_x + x, start_y + y)
 			for h in range(hub.max_elevation + 1):
 				hub.ground_layers[h].set_cell(cell, -1)
-				hub.water_layers[h].set_cell(cell, -1) # 🎯 THÊM DÒNG NÀY
+				hub.water_layers[h].set_cell(cell, -1)
 				hub.object_layers[h].set_cell(cell, -1)
+				hub.highlight_layers[h].set_cell(cell, -1)
 				
 			if hub.spawned_objects.has(cell):
 				if is_instance_valid(hub.spawned_objects[cell]):
@@ -174,3 +184,78 @@ func find_safe_spawn_cell() -> Vector2i:
 				best_score = score
 				best_cell = cell
 	return best_cell
+
+# ==============================================================================
+# 🎯 HỆ THỐNG KẺ VIỀN SÁNG CHUẨN XÁC ĐẾN TỪNG PIXEL
+# ==============================================================================
+func update_cell_highlight(pos_2d: Vector2i) -> void:
+	if not hub.world_data.has(pos_2d): return
+	var data = hub.world_data[pos_2d]
+	var z = data["z"]
+	var is_water = data.get("is_water", false)
+
+	# Dọn rác viền cũ
+	for h in range(hub.max_elevation + 1):
+		hub.highlight_layers[h].set_cell(pos_2d, -1)
+
+	if is_water: return 
+
+	var get_surface_z = func(cell: Vector2i) -> int:
+		if hub.world_data.has(cell):
+			var c_data = hub.world_data[cell]
+			return hub.water_level if c_data.get("is_water", false) else c_data["z"]
+		return z 
+
+	# ---------------------------------------------------------
+	# 🎯 ĐÃ SỬA: NHỜ ENGINE GODOT TỰ ĐỘNG TÌM HÀNG XÓM
+	# Hàm get_neighbor_cell() giải quyết triệt để lỗi sai lệch trục!
+	# ---------------------------------------------------------
+	var nw_cell = hub.base_ground.get_neighbor_cell(pos_2d, TileSet.CELL_NEIGHBOR_TOP_LEFT_SIDE)
+	var ne_cell = hub.base_ground.get_neighbor_cell(pos_2d, TileSet.CELL_NEIGHBOR_TOP_RIGHT_SIDE)
+	
+	# Ô Góc Bắc (Tít đằng sau) chính là hàng xóm Đông Bắc của ô Tây Bắc
+	var n_cell = hub.base_ground.get_neighbor_cell(nw_cell, TileSet.CELL_NEIGHBOR_TOP_RIGHT_SIDE)
+
+	var z_nw = get_surface_z.call(nw_cell)
+	var z_ne = get_surface_z.call(ne_cell)
+	var z_n  = get_surface_z.call(n_cell)
+
+	# Lệnh check: Lớp hiện tại (z) phải LỚN HƠN layer của mấy thằng đằng sau
+	var exposed_left = z > z_nw
+	var exposed_right = z > z_ne
+	var exposed_north = z > z_n
+
+	if exposed_left or exposed_right:
+		var final_coords = Vector2i(-1, -1)
+		
+		# 🛠️ NẾU VIỀN TRÁI/PHẢI BỊ NGƯỢC, ÔNG ĐỔI CHỖ (4,1) VÀ (5,1) CHO NHAU
+		var tile_both  = Vector2i(3, 1) # Góc ^
+		var tile_left  = Vector2i(4, 1) # Viền /
+		var tile_right = Vector2i(5, 1) # Viền \
+		
+		if exposed_left and exposed_right: 
+			final_coords = tile_both
+		elif exposed_left: 
+			final_coords = tile_left
+		elif exposed_right: 
+			final_coords = tile_right
+			
+		if final_coords != Vector2i(-1, -1):
+			hub.highlight_layers[z].set_cell(pos_2d, 0, final_coords)
+
+# ==============================================================================
+# 🎯 CẬP NHẬT VIỀN CHO CHÍNH NÓ VÀ CÁC Ô BỊ ẢNH HƯỞNG PHÍA TRƯỚC
+# ==============================================================================
+func update_surrounding_highlights(pos_2d: Vector2i) -> void:
+	# 1. Cập nhật chính nó (Trường hợp nó bị lún lộ vách)
+	update_cell_highlight(pos_2d)
+	
+	# 2. Cập nhật 3 ô đằng trước (Tây Nam, Đông Nam và Góc Nam). 
+	# Khi pos_2d bị đào lún xuống, 3 ô này sẽ bị lộ vách đá sau lưng chúng ra!
+	var sw_cell = hub.base_ground.get_neighbor_cell(pos_2d, TileSet.CELL_NEIGHBOR_BOTTOM_LEFT_SIDE)
+	var se_cell = hub.base_ground.get_neighbor_cell(pos_2d, TileSet.CELL_NEIGHBOR_BOTTOM_RIGHT_SIDE)
+	var s_cell = hub.base_ground.get_neighbor_cell(pos_2d, TileSet.CELL_NEIGHBOR_BOTTOM_CORNER)
+	
+	update_cell_highlight(sw_cell)
+	update_cell_highlight(se_cell)
+	update_cell_highlight(s_cell)

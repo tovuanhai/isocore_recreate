@@ -46,6 +46,7 @@ var object_scenes: Array[String]:
 var ground_layers: Array[TileMapLayer] = []
 var object_layers: Array[TileMapLayer] = []
 var water_layers: Array[TileMapLayer] = []
+var highlight_layers: Array[TileMapLayer] = []
 var spawned_objects: Dictionary = {}
 var world_data: Dictionary = {}
 var ground_durability: Dictionary = {} 
@@ -72,9 +73,11 @@ func setup_elevation_layers() -> void:
 	ground_layers.clear()
 	object_layers.clear()
 	water_layers.clear()
+	highlight_layers.clear()
 
 	for i in range(max_elevation + 1):
 		var g_layer: TileMapLayer
+		var h_layer: TileMapLayer
 		var o_layer: TileMapLayer
 		var w_layer: TileMapLayer
 
@@ -87,6 +90,11 @@ func setup_elevation_layers() -> void:
 			w_layer.clear()
 			w_layer.name = "WaterLayer_0"
 			add_child(w_layer)
+			
+			h_layer = base_ground.duplicate()
+			h_layer.clear()
+			h_layer.name = "HighlightLayer_0"
+			add_child(h_layer)
 		else:
 			g_layer = base_ground.duplicate()
 			g_layer.clear()
@@ -102,24 +110,35 @@ func setup_elevation_layers() -> void:
 			o_layer.clear()
 			o_layer.name = "ObjectLayer_" + str(i)
 			add_child(o_layer)
+			
+			h_layer = base_ground.duplicate()
+			h_layer.clear()
+			h_layer.name = "HighlightLayer_" + str(i)
+			add_child(h_layer)
 
 		var elev_shift = cliff_height * i
+		
+		h_layer.self_modulate = Color(1.0, 1.0, 1.0, 0.7) # Mờ nhẹ 30% để viền trông tự nhiên
 
 		g_layer.position.y = -elev_shift
 		w_layer.position.y = -elev_shift
 		o_layer.position.y = -elev_shift
+		h_layer.position.y = -elev_shift
 
 		g_layer.y_sort_origin = elev_shift
 		w_layer.y_sort_origin = elev_shift
 		o_layer.y_sort_origin = elev_shift
+		h_layer.y_sort_origin = elev_shift
 
 		g_layer.z_index = 0
 		w_layer.z_index = 0
 		o_layer.z_index = 0
+		h_layer.z_index = 0
 
 		g_layer.y_sort_enabled = true
 		w_layer.y_sort_enabled = true
 		o_layer.y_sort_enabled = true
+		h_layer.y_sort_enabled = true
 
 		# 🎯 1. ĐẤT TRÊN BỜ VÀ DƯỚI ĐÁY ĐỀU SÁNG ĐẸP (Không bị bùn đen)
 		g_layer.self_modulate = Color(1.0, 1.0, 1.0, 1.0) 
@@ -150,7 +169,9 @@ func setup_elevation_layers() -> void:
 		ground_layers.append(g_layer)
 		water_layers.append(w_layer)
 		object_layers.append(o_layer)
-
+		highlight_layers.append(h_layer)
+		
+		move_child(h_layer, g_layer.get_index() + 1)
 		move_child(w_layer, g_layer.get_index() + 1)
 		move_child(base_object, -1)
 
@@ -195,6 +216,9 @@ func _on_player_interact(_player: Node2D, cell: Vector2i, action_type: String, d
 		GameEvents.tile_hit_vfx.emit(vfx_global, "mine_ground", null)
 		_refresh_astar(cell)
 		
+		# ✅ THAY BẰNG 1 DÒNG NÀY:
+		spawner.update_surrounding_highlights(cell)
+		
 		# 🎯 Cập nhật lại khung viền ngay lập tức
 		hover_manager.force_update_hover()
 		return
@@ -232,4 +256,8 @@ func _destroy_ground_at_cell(cell: Vector2i) -> void:
 		water_layers[water_level].set_cell(cell, 0, water_tile)
 
 	_refresh_astar(cell)
+	
+	# ✅ THAY BẰNG 1 DÒNG NÀY:
+	spawner.update_surrounding_highlights(cell)
+	
 	hover_manager.force_update_hover()

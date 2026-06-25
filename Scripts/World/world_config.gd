@@ -21,7 +21,7 @@ extends Resource
 @export var water_tile: Vector2i = Vector2i(1, 1)
 
 # --- OBJECTS ---
-@export var object_scenes: Array[String] = ["Grass_Tree", "rock1", "Snow_Tree"]
+@export var object_scenes: Array[String] = ["Grass_Tree", "rock1", "Snow_Tree", "cattail", "duckweed", "cactus"]
 
 # --- WORLD GENERATOR (octave frequencies được set cứng trong code) ---
 @export var biome_noise_frequency: float = 0.002

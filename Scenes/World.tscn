@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://cus0a667ydguj"]
+[gd_scene load_steps=18 format=3 uid="uid://cus0a667ydguj"]
 
 [ext_resource type="TileSet" uid="uid://0u8hh8mx7hqj" path="res://Resources/World.tres" id="1_5cjrv"]
 [ext_resource type="Script" uid="uid://dhqx1aw1r1gr5" path="res://Scripts/World/tile_map.gd" id="1_p70al"]
@@ -11,11 +11,36 @@
 [ext_resource type="Script" uid="uid://ibk6rusiy4hq" path="res://Scripts/World/hover_manager.gd" id="7_op4cu"]
 [ext_resource type="Texture2D" uid="uid://coww5lumogws8" path="res://Assets/Tileset/Pixel Isometric 16x16/Tiles.png" id="8_7yo87"]
 [ext_resource type="Script" uid="uid://cccbvw43wgbe8" path="res://Scripts/dynamic_camera.gd" id="9_ti1bm"]
+[ext_resource type="Shader" uid="uid://db3guixnxc0k1" path="res://Resources/Shaders/pixel_clouds.gdshader" id="11_op4cu"]
 [ext_resource type="PackedScene" uid="uid://dr86xjpqn4peh" path="res://Scenes/day_night_manager.tscn" id="12_ti1bm"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_ti1bm"]
 atlas = ExtResource("8_7yo87")
 region = Rect2(32, 16, 16, 16)
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_op4cu"]
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_op4cu"]
+in_3d_space = true
+seamless = true
+noise = SubResource("FastNoiseLite_op4cu")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_8l3nt"]
+shader = ExtResource("11_op4cu")
+shader_parameter/noise_texture = SubResource("NoiseTexture2D_op4cu")
+shader_parameter/pixel_size = 1.0
+shader_parameter/speed_1 = Vector2(0.5, 0.5)
+shader_parameter/scale_1 = 1000.0
+shader_parameter/cover_1 = 0.65
+shader_parameter/dark_1 = 0.35
+shader_parameter/speed_2 = Vector2(0.25, 0.25)
+shader_parameter/scale_2 = 600.0
+shader_parameter/cover_2 = 0.85
+shader_parameter/dark_2 = 0.2
+shader_parameter/speed_3 = Vector2(0.1, 0.1)
+shader_parameter/scale_3 = 300.0
+shader_parameter/cover_3 = 0.9
+shader_parameter/dark_3 = 0.08
 
 [node name="Root" type="Node2D"]
 y_sort_enabled = true
@@ -55,6 +80,16 @@ position = Vector2(-16, -7)
 zoom = Vector2(5, 5)
 script = ExtResource("9_ti1bm")
 player = NodePath("../Player/VisualRoot/Sprite2D")
+
+[node name="ColorRect" type="ColorRect" parent="Camera2D"]
+z_index = 1
+z_as_relative = false
+material = SubResource("ShaderMaterial_8l3nt")
+offset_left = -960.0
+offset_top = -540.0
+offset_right = 960.0
+offset_bottom = 540.0
+mouse_filter = 2
 
 [node name="CanvasLayer" parent="." instance=ExtResource("4_gjpho")]
 
