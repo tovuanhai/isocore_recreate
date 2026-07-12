@@ -1,0 +1,43 @@
+[gd_scene load_steps=7 format=3 uid="uid://d0f5ixbpxfkcj"]
+
+[ext_resource type="Script" uid="uid://bvmh1d6sxutop" path="res://Scripts/World/Objects/crafting_bench_object.gd" id="1_tuc12"]
+[ext_resource type="Shader" uid="uid://hh5b5281ovje" path="res://Resources/Shaders/isometric_shadow.gdshader" id="2_bdf0c"]
+[ext_resource type="Texture2D" uid="uid://opjde3sqhxan" path="res://Assets/Tileset/Pixel Isometric 16x16/Tiles2.png" id="2_cggmo"]
+[ext_resource type="PackedScene" uid="uid://daojqpic6bj2l" path="res://Scenes/Components/HealthDropComponent.tscn" id="2_ksnva"]
+[ext_resource type="PackedScene" uid="uid://ddrfimlsd4hob" path="res://Scenes/Components/interact_component.tscn" id="3_cggmo"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_6ue8a"]
+shader = ExtResource("2_bdf0c")
+shader_parameter/shadow_color = Color(0, 0, 0, 0.45)
+shader_parameter/base_y = 0.0
+shader_parameter/obj_height = 32.0
+
+[node name="WoodenBench" type="StaticBody2D"]
+script = ExtResource("1_tuc12")
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="."]
+polygon = PackedVector2Array(-7, 0, 0, 4, 7, 0, 0, -4)
+
+[node name="Sprite2D2" type="Sprite2D" parent="." groups=["isometric_shadows"]]
+material = SubResource("ShaderMaterial_6ue8a")
+texture = ExtResource("2_cggmo")
+centered = false
+offset = Vector2(-8, -11)
+region_enabled = true
+region_rect = Rect2(144, 80, 16, 16)
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_cggmo")
+centered = false
+offset = Vector2(-8, -11)
+region_enabled = true
+region_rect = Rect2(144, 80, 16, 16)
+
+[node name="HealthDropComponent" parent="." instance=ExtResource("2_ksnva")]
+drop_item_id = "wooden_bench"
+
+[node name="InteractComponent" parent="." instance=ExtResource("3_cggmo")]
+
+[node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="."]
+position = Vector2(-4.76837e-07, -3.5)
+scale = Vector2(1.6, 1.05)

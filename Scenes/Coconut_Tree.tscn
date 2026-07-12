@@ -1,0 +1,45 @@
+[gd_scene format=3 uid="uid://dxhy5ecjnrgam"]
+
+[ext_resource type="Script" uid="uid://bixptm7w4qh08" path="res://Scripts/objects.gd" id="1_iyf2g"]
+[ext_resource type="Shader" uid="uid://hh5b5281ovje" path="res://Resources/Shaders/isometric_shadow.gdshader" id="2_lmi4e"]
+[ext_resource type="Texture2D" uid="uid://shgsqbru5qsk" path="res://Assets/Tileset/Pixel Isometric 16x16/Tiles3.png" id="3_wvl84"]
+[ext_resource type="PackedScene" uid="uid://daojqpic6bj2l" path="res://Scenes/Components/HealthDropComponent.tscn" id="5_iqqkf"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_e3cvl"]
+shader = ExtResource("2_lmi4e")
+shader_parameter/shadow_color = Color(0, 0, 0, 0.45)
+shader_parameter/base_y = 0.0
+shader_parameter/obj_height = 32.0
+
+[node name="StaticBody2D" type="StaticBody2D" unique_id=1408361882]
+y_sort_enabled = true
+script = ExtResource("1_iyf2g")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1900234786 groups=["isometric_shadows"]]
+material = SubResource("ShaderMaterial_e3cvl")
+texture = ExtResource("3_wvl84")
+centered = false
+offset = Vector2(-16, -40)
+region_enabled = true
+region_rect = Rect2(64, 0, 32, 48)
+
+[node name="Sprite2D2" type="Sprite2D" parent="." unique_id=440654034]
+y_sort_enabled = true
+texture = ExtResource("3_wvl84")
+centered = false
+offset = Vector2(-16, -40)
+region_enabled = true
+region_rect = Rect2(64, 0, 32, 48)
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="." unique_id=272515799]
+position = Vector2(0, -2)
+polygon = PackedVector2Array(0, 5, -7, 2, 0, -1, 7, 2)
+
+[node name="HealthDropComponent" parent="." unique_id=722225540 instance=ExtResource("5_iqqkf")]
+max_health = 4
+drop_item_id = "stick"
+drop_amount = 3
+
+[node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="." unique_id=504071754]
+position = Vector2(1.90735e-06, -12)
+scale = Vector2(3.4, 2.2)

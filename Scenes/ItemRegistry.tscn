@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://ch6qir1lukfu4"]
+
+[ext_resource type="Script" uid="uid://bt4e57mvfuf7r" path="res://Scripts/Autoloads/ItemRegistry.gd" id="1_d11a0"]
+
+[node name="ItemRegistry" type="Node"]
+script = ExtResource("1_d11a0")

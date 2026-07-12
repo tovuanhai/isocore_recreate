@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://cvj5wwkconhi5"]
+
+[ext_resource type="Texture2D" uid="uid://c2iodfqf25mhg" path="res://Assets/Tools Asset 16x16/53.png" id="1_b70ga"]
+[ext_resource type="Script" uid="uid://dm2yqhxvqb5iw" path="res://Scripts/Items/ItemData.gd" id="1_b236o"]
+
+[resource]
+script = ExtResource("1_b236o")
+id = &"torch"
+display_name = "Torch"
+description = "Add light to player"
+icon = ExtResource("1_b70ga")
+metadata/_custom_type_script = "uid://dm2yqhxvqb5iw"

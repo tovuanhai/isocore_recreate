@@ -1,0 +1,203 @@
+[gd_scene load_steps=20 format=3 uid="uid://dm2gsuvv6qynt"]
+
+[ext_resource type="Script" uid="uid://dn2vrqd6uw721" path="res://Scripts/UI/InventoryInterface.gd" id="1_8wlyu"]
+[ext_resource type="FontFile" uid="uid://mkvknh57gn2b" path="res://Assets/UI/Fonts/DFVN Pexel Grotesk.otf" id="1_48q88"]
+[ext_resource type="Script" uid="uid://btobmcagan3m3" path="res://Scripts/UI/canvas_layer.gd" id="1_nxvpl"]
+[ext_resource type="Texture2D" uid="uid://j7bga73sx0qt" path="res://Assets/UI/Micro Icon Pack/Sprite Sheet (10x10).png" id="2_dewlx"]
+[ext_resource type="Script" uid="uid://b5p60wrlkrqb3" path="res://Scripts/UI/minimap.gd" id="2_hfhsn"]
+[ext_resource type="Texture2D" uid="uid://dn0clldiwpytt" path="res://Assets/UI/Minimap/minimap_frame_background.png" id="2_nxvpl"]
+[ext_resource type="Texture2D" uid="uid://c63xm1a1lndo7" path="res://Assets/UI/Minimap/minimap_frame.png" id="4_hfhsn"]
+[ext_resource type="PackedScene" uid="uid://5j57ils4lfbj" path="res://Scenes/UI/InventoryGridUI.tscn" id="8_w8wei"]
+[ext_resource type="Script" uid="uid://ded3ju30vkn0v" path="res://Scripts/UI/ItemNameOnHotbarLabel.gd" id="9_u6hof"]
+[ext_resource type="PackedScene" uid="uid://d03eq0wj6bqu" path="res://Scenes/UI/ItemTooltip.tscn" id="11_nqsl3"]
+[ext_resource type="StyleBox" uid="uid://dcoln7n3lj0ab" path="res://Resources/UI/panel.tres" id="11_u6hof"]
+[ext_resource type="PackedScene" uid="uid://cwgidp4kxh6fc" path="res://Scenes/UI/crafting_interface.tscn" id="13_o3jj0"]
+[ext_resource type="PackedScene" uid="uid://8hgyon1kanut" path="res://Scenes/UI/mouse_cursor.tscn" id="13_thdbn"]
+[ext_resource type="Script" uid="uid://b3ayeyrsb5ndm" path="res://Scripts/Items/recipe_data.gd" id="14_813c4"]
+[ext_resource type="Resource" uid="uid://lppluodgpmde" path="res://Resources/Items/recipe_torch.tres" id="15_jlkmm"]
+[ext_resource type="Resource" uid="uid://csjeotbto7qcs" path="res://Resources/Items/recipe_stone_pickaxe.tres" id="16_462t7"]
+[ext_resource type="Resource" uid="uid://csmtsy83ocqdn" path="res://Resources/Items/recipe_wooden_shovel.tres" id="17_462t7"]
+[ext_resource type="Resource" uid="uid://clahcykxw1ndt" path="res://Resources/Items/recipe_wooden_bench.tres" id="17_jlkmm"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_dewlx"]
+texture = ExtResource("2_nxvpl")
+
+[node name="InventoryInterface" type="CanvasLayer"]
+script = ExtResource("1_8wlyu")
+
+[node name="PanelContainer" type="PanelContainer" parent="."]
+clip_children = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -299.0
+offset_top = 10.0
+offset_right = -203.0
+offset_bottom = 106.0
+grow_horizontal = 0
+scale = Vector2(3, 3)
+theme_override_styles/panel = SubResource("StyleBoxTexture_dewlx")
+
+[node name="Minimap" type="ColorRect" parent="PanelContainer"]
+layout_mode = 2
+script = ExtResource("2_hfhsn")
+
+[node name="PlayerIcon" type="Sprite2D" parent="PanelContainer/Minimap"]
+position = Vector2(48, 48)
+texture = ExtResource("2_dewlx")
+region_enabled = true
+region_rect = Rect2(0, 60, 12, 12)
+
+[node name="Outline" type="TextureRect" parent="PanelContainer"]
+layout_mode = 2
+texture = ExtResource("4_hfhsn")
+
+[node name="FPSCounter" type="Label" parent="."]
+offset_right = 40.0
+offset_bottom = 23.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("1_48q88")
+script = ExtResource("1_nxvpl")
+
+[node name="HotbarGridUI" parent="." instance=ExtResource("8_w8wei")]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+offset_left = -114.0
+offset_top = -45.0
+offset_right = 114.0
+offset_bottom = -45.0
+grow_vertical = 0
+is_hotbar = true
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+visible = false
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -101.5
+offset_top = -77.0
+offset_right = 101.5
+offset_bottom = -37.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/separation = 8
+
+[node name="Label" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+theme_override_font_sizes/font_size = 18
+text = "fsdgsdgsgsdgsdgsdgsdg"
+script = ExtResource("9_u6hof")
+
+[node name="ItemTooltip" parent="." instance=ExtResource("11_nqsl3")]
+visible = false
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+offset_left = -323.0
+offset_top = -118.0
+offset_right = -9.0
+offset_bottom = -11.0
+grow_horizontal = 0
+grow_vertical = 0
+
+[node name="MainInventoryPanel" type="PanelContainer" parent="."]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -19.0
+offset_top = -19.0
+offset_right = 19.0
+offset_bottom = 19.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(20, 20)
+theme_override_styles/panel = ExtResource("11_u6hof")
+
+[node name="MainInventoryGridUI" parent="MainInventoryPanel" instance=ExtResource("8_w8wei")]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+start_index = 10
+slot_count = 20
+
+[node name="ChestInterface" type="CenterContainer" parent="."]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ChestInterface"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="ChestPanel" type="PanelContainer" parent="ChestInterface/VBoxContainer"]
+layout_mode = 2
+theme_override_styles/panel = ExtResource("11_u6hof")
+
+[node name="MarginContainer" type="MarginContainer" parent="ChestInterface/VBoxContainer/ChestPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ChestInterface/VBoxContainer/ChestPanel/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Label" type="Label" parent="ChestInterface/VBoxContainer/ChestPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 25
+text = "Chest"
+
+[node name="ChestGrid" parent="ChestInterface/VBoxContainer/ChestPanel/MarginContainer/VBoxContainer" instance=ExtResource("8_w8wei")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="PlayerPanel" type="PanelContainer" parent="ChestInterface/VBoxContainer"]
+layout_mode = 2
+theme_override_styles/panel = ExtResource("11_u6hof")
+
+[node name="MarginContainer" type="MarginContainer" parent="ChestInterface/VBoxContainer/PlayerPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ChestInterface/VBoxContainer/PlayerPanel/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Label" type="Label" parent="ChestInterface/VBoxContainer/PlayerPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("1_48q88")
+theme_override_font_sizes/font_size = 25
+text = "Inventory"
+
+[node name="PlayerGridInChest" parent="ChestInterface/VBoxContainer/PlayerPanel/MarginContainer/VBoxContainer" instance=ExtResource("8_w8wei")]
+unique_name_in_owner = true
+layout_mode = 2
+slot_count = 20
+
+[node name="CraftingInterface" parent="." instance=ExtResource("13_o3jj0")]
+offset_left = 19.0
+offset_top = -251.0
+offset_right = 369.0
+offset_bottom = 249.0
+all_recipes = Array[ExtResource("14_813c4")]([ExtResource("15_jlkmm"), ExtResource("16_462t7"), ExtResource("17_jlkmm"), ExtResource("17_462t7")])
+
+[node name="MouseCursor" parent="." instance=ExtResource("13_thdbn")]

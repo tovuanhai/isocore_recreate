@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://bb4eskdgnjg5k"]
+
+[ext_resource type="Texture2D" uid="uid://opjde3sqhxan" path="res://Assets/Tileset/Pixel Isometric 16x16/Tiles2.png" id="1_7ceck"]
+[ext_resource type="Script" uid="uid://dm2yqhxvqb5iw" path="res://Scripts/Items/ItemData.gd" id="1_fkqjn"]
+[ext_resource type="PackedScene" uid="uid://dcbxdnkxr6ap2" path="res://Scenes/Objects/BasicFurnace.tscn" id="2_xmj2v"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_6og8t"]
+atlas = ExtResource("1_7ceck")
+region = Rect2(0, 48, 32, 32)
+
+[resource]
+script = ExtResource("1_fkqjn")
+id = &"basic_furnace"
+display_name = "Basic Furnace"
+description = "A furnace can melt low-level ores into bars"
+icon = SubResource("AtlasTexture_6og8t")
+type = 5
+is_stackable = false
+object_scene = ExtResource("2_xmj2v")
+build_size = Vector2i(2, 2)
+ghost_offset = Vector2(0, -12)
+metadata/_custom_type_script = "uid://dm2yqhxvqb5iw"

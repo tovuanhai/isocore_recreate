@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="ToolData" format=3 uid="uid://icwgtb64as8g"]
+
+[ext_resource type="Texture2D" uid="uid://dosl4if7f77i8" path="res://Assets/Tools Asset 16x16/00.png" id="1_2bf18"]
+[ext_resource type="Script" uid="uid://clqbp6c2gup6k" path="res://Scripts/Items/ToolData.gd" id="1_d3ytv"]
+
+[resource]
+script = ExtResource("1_d3ytv")
+tool_category = 0
+base_damage = 2
+swing_speed = 1.0
+tier = 1
+max_durability = 60
+id = &"wooden_pickaxe"
+display_name = "Wooden Pickaxe"
+description = "A pickaxe made of wood"
+icon = ExtResource("1_2bf18")
+type = 2
+max_stack = 64
+is_stackable = false
+metadata/_custom_type_script = "uid://clqbp6c2gup6k"

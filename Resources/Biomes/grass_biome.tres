@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="BiomeData" format=3 uid="uid://l72xq6vq8dbn"]
+
+[ext_resource type="Script" uid="uid://dfacq88w4yve6" path="res://Scripts/World/biome_data.gd" id="1_8xbom"]
+
+[resource]
+script = ExtResource("1_8xbom")
+tiles = Array[Vector2i]([Vector2i(2, 3), Vector2i(2, 0), Vector2i(3, 0)])
+target_temp = 0.10000000000000007
+target_hum = 0.10000000000000007
+main_plants = Array[String](["Grass_Tree"])
+main_rocks = Array[String](["rock1"])
+metadata/_custom_type_script = "uid://dfacq88w4yve6"

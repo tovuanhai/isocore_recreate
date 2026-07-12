@@ -1,0 +1,103 @@
+[gd_scene format=3 uid="uid://cus0a667ydguj"]
+
+[ext_resource type="TileSet" uid="uid://0u8hh8mx7hqj" path="res://Resources/World.tres" id="1_5cjrv"]
+[ext_resource type="Script" uid="uid://dhqx1aw1r1gr5" path="res://Scripts/World/tile_map.gd" id="1_p70al"]
+[ext_resource type="Resource" uid="uid://llqk107svpil" path="res://Resources/world_config.tres" id="2_kn06e"]
+[ext_resource type="PackedScene" uid="uid://dw82ffshcw0we" path="res://Scenes/Player.tscn" id="3_5nsto"]
+[ext_resource type="PackedScene" uid="uid://dm2gsuvv6qynt" path="res://Scenes/UI/UI.tscn" id="4_gjpho"]
+[ext_resource type="Script" uid="uid://cd3iflck5lh7q" path="res://Scripts/World/world_generator.gd" id="4_kn06e"]
+[ext_resource type="Script" uid="uid://d31bfp0sh33xx" path="res://Scripts/World/chunk_manager.gd" id="5_7yo87"]
+[ext_resource type="Script" uid="uid://c6vyy7vvq7gcb" path="res://Scripts/World/spawner.gd" id="6_ti1bm"]
+[ext_resource type="Script" uid="uid://ibk6rusiy4hq" path="res://Scripts/World/hover_manager.gd" id="7_op4cu"]
+[ext_resource type="Texture2D" uid="uid://coww5lumogws8" path="res://Assets/Tileset/Pixel Isometric 16x16/Tiles.png" id="8_7yo87"]
+[ext_resource type="Script" uid="uid://cccbvw43wgbe8" path="res://Scripts/dynamic_camera.gd" id="9_ti1bm"]
+[ext_resource type="Shader" uid="uid://db3guixnxc0k1" path="res://Resources/Shaders/pixel_clouds.gdshader" id="11_op4cu"]
+[ext_resource type="PackedScene" uid="uid://dr86xjpqn4peh" path="res://Scenes/day_night_manager.tscn" id="12_ti1bm"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ti1bm"]
+atlas = ExtResource("8_7yo87")
+region = Rect2(32, 16, 16, 16)
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_op4cu"]
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_op4cu"]
+noise = SubResource("FastNoiseLite_op4cu")
+seamless = true
+in_3d_space = true
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_8l3nt"]
+shader = ExtResource("11_op4cu")
+shader_parameter/noise_texture = SubResource("NoiseTexture2D_op4cu")
+shader_parameter/pixel_size = 1.0
+shader_parameter/speed_1 = Vector2(0.5, 0.5)
+shader_parameter/scale_1 = 1000.0
+shader_parameter/cover_1 = 0.65
+shader_parameter/dark_1 = 0.35
+shader_parameter/speed_2 = Vector2(0.25, 0.25)
+shader_parameter/scale_2 = 600.0
+shader_parameter/cover_2 = 0.85
+shader_parameter/dark_2 = 0.2
+shader_parameter/speed_3 = Vector2(0.1, 0.1)
+shader_parameter/scale_3 = 300.0
+shader_parameter/cover_3 = 0.9
+shader_parameter/dark_3 = 0.08
+
+[node name="Root" type="Node2D" unique_id=664888087]
+y_sort_enabled = true
+
+[node name="TileMap" type="Node2D" parent="." unique_id=1360206795]
+y_sort_enabled = true
+script = ExtResource("1_p70al")
+config = ExtResource("2_kn06e")
+
+[node name="Layer0" type="TileMapLayer" parent="TileMap" unique_id=1637500389]
+y_sort_enabled = true
+tile_set = ExtResource("1_5cjrv")
+
+[node name="Layer1" type="TileMapLayer" parent="TileMap" unique_id=845782909]
+y_sort_enabled = true
+tile_set = ExtResource("1_5cjrv")
+
+[node name="WorldGenerator" type="Node" parent="TileMap" unique_id=207083417]
+script = ExtResource("4_kn06e")
+
+[node name="ChunkManager" type="Node" parent="TileMap" unique_id=539394028]
+script = ExtResource("5_7yo87")
+
+[node name="Spawner" type="Node" parent="TileMap" unique_id=1387808737]
+script = ExtResource("6_ti1bm")
+
+[node name="HoverManager" type="Node" parent="TileMap" unique_id=503087667]
+script = ExtResource("7_op4cu")
+hover_texture = SubResource("AtlasTexture_ti1bm")
+
+[node name="Player" parent="." unique_id=1588164945 instance=ExtResource("3_5nsto")]
+position = Vector2(-16, -7)
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=2040535130 node_paths=PackedStringArray("player")]
+physics_interpolation_mode = 1
+position = Vector2(-16, -7)
+zoom = Vector2(5, 5)
+script = ExtResource("9_ti1bm")
+player = NodePath("../Player/VisualRoot/Sprite2D")
+
+[node name="ColorRect" type="ColorRect" parent="Camera2D" unique_id=559920539]
+z_index = 1
+z_as_relative = false
+material = SubResource("ShaderMaterial_8l3nt")
+offset_left = -960.0
+offset_top = -540.0
+offset_right = 960.0
+offset_bottom = 540.0
+mouse_filter = 2
+
+[node name="CanvasLayer" parent="." unique_id=1371141068 instance=ExtResource("4_gjpho")]
+
+[node name="Minimap" parent="CanvasLayer/PanelContainer" index="0" node_paths=PackedStringArray("tile_map", "player")]
+tile_map = NodePath("../../../TileMap")
+player = NodePath("../../../Player")
+
+[node name="DayNightManager" parent="." unique_id=219334651 instance=ExtResource("12_ti1bm")]
+
+[editable path="Player"]
+[editable path="CanvasLayer"]

@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="BiomeData" format=3 uid="uid://cd4mc6lqin6e"]
+
+[ext_resource type="Script" uid="uid://dfacq88w4yve6" path="res://Scripts/World/biome_data.gd" id="1_aobel"]
+
+[resource]
+script = ExtResource("1_aobel")
+id = "beach"
+tiles = Array[Vector2i]([Vector2i(1, 3)])
+main_plants = Array[String](["Coconut_Tree"])
+use_shore_logic = true
+use_desert_spacing = true
+metadata/_custom_type_script = "uid://dfacq88w4yve6"

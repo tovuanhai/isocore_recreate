@@ -1,0 +1,49 @@
+[gd_scene load_steps=8 format=3 uid="uid://dots4a31oqmyy"]
+
+[ext_resource type="Script" uid="uid://bixptm7w4qh08" path="res://Scripts/objects.gd" id="1_8kkub"]
+[ext_resource type="Texture2D" uid="uid://opjde3sqhxan" path="res://Assets/Tileset/Pixel Isometric 16x16/Tiles2.png" id="1_tmokt"]
+[ext_resource type="Texture2D" uid="uid://dtfvatxcys261" path="res://Assets/Tileset/NormalMap/Tiles2_normal.png" id="2_b6b3p"]
+[ext_resource type="Shader" uid="uid://hh5b5281ovje" path="res://Resources/Shaders/isometric_shadow.gdshader" id="2_ecyv4"]
+[ext_resource type="PackedScene" uid="uid://daojqpic6bj2l" path="res://Scenes/Components/HealthDropComponent.tscn" id="4_23x0m"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_1ja7g"]
+shader = ExtResource("2_ecyv4")
+shader_parameter/shadow_color = Color(0, 0, 0, 0.45)
+shader_parameter/base_y = 0.0
+shader_parameter/obj_height = 32.0
+
+[sub_resource type="CanvasTexture" id="CanvasTexture_8kkub"]
+diffuse_texture = ExtResource("1_tmokt")
+normal_texture = ExtResource("2_b6b3p")
+
+[node name="StaticBody2D" type="StaticBody2D"]
+y_sort_enabled = true
+script = ExtResource("1_8kkub")
+
+[node name="Sprite2D" type="Sprite2D" parent="." groups=["isometric_shadows"]]
+material = SubResource("ShaderMaterial_1ja7g")
+texture = ExtResource("1_tmokt")
+centered = false
+offset = Vector2(-8, -12)
+region_enabled = true
+region_rect = Rect2(0, 0, 16, 16)
+
+[node name="Sprite2D2" type="Sprite2D" parent="."]
+y_sort_enabled = true
+texture = SubResource("CanvasTexture_8kkub")
+centered = false
+offset = Vector2(-8, -12)
+region_enabled = true
+region_rect = Rect2(0, 0, 16, 16)
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="."]
+polygon = PackedVector2Array(0, -4, 8, 0, 0, 4, -8, 0)
+
+[node name="HealthDropComponent" parent="." instance=ExtResource("4_23x0m")]
+max_health = 2
+drop_item_id = "stone"
+drop_amount = 3
+
+[node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="."]
+position = Vector2(0.499999, -4)
+scale = Vector2(1.55, 1)

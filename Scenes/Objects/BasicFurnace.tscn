@@ -1,0 +1,46 @@
+[gd_scene format=3 uid="uid://dcbxdnkxr6ap2"]
+
+[ext_resource type="Script" uid="uid://bvmh1d6sxutop" path="res://Scripts/World/Objects/crafting_bench_object.gd" id="1_7tntu"]
+[ext_resource type="Shader" uid="uid://hh5b5281ovje" path="res://Resources/Shaders/isometric_shadow.gdshader" id="2_lv62u"]
+[ext_resource type="Texture2D" uid="uid://opjde3sqhxan" path="res://Assets/Tileset/Pixel Isometric 16x16/Tiles2.png" id="3_54qey"]
+[ext_resource type="PackedScene" uid="uid://daojqpic6bj2l" path="res://Scenes/Components/HealthDropComponent.tscn" id="4_pob2i"]
+[ext_resource type="PackedScene" uid="uid://ddrfimlsd4hob" path="res://Scenes/Components/interact_component.tscn" id="5_11bdg"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_6ue8a"]
+shader = ExtResource("2_lv62u")
+shader_parameter/shadow_color = Color(0, 0, 0, 0.45)
+shader_parameter/base_y = 0.0
+shader_parameter/obj_height = 32.0
+
+[node name="BasicFurnace" type="StaticBody2D" unique_id=796184349]
+script = ExtResource("1_7tntu")
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="." unique_id=1358752082]
+position = Vector2(0, 3)
+polygon = PackedVector2Array(0, 0, -14, -7, 0, -15, 14, -7)
+
+[node name="Sprite2D2" type="Sprite2D" parent="." unique_id=1683656144 groups=["isometric_shadows"]]
+material = SubResource("ShaderMaterial_6ue8a")
+position = Vector2(0, 3)
+texture = ExtResource("3_54qey")
+centered = false
+offset = Vector2(-16, -31)
+region_enabled = true
+region_rect = Rect2(0, 48, 32, 32)
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1052751447]
+position = Vector2(0, 3)
+texture = ExtResource("3_54qey")
+centered = false
+offset = Vector2(-16, -31)
+region_enabled = true
+region_rect = Rect2(0, 48, 32, 32)
+
+[node name="HealthDropComponent" parent="." unique_id=2054993272 instance=ExtResource("4_pob2i")]
+drop_item_id = "basic_furnace"
+
+[node name="InteractComponent" parent="." unique_id=1759930202 instance=ExtResource("5_11bdg")]
+
+[node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="." unique_id=1891953125]
+position = Vector2(-4.76837e-07, -3.5)
+scale = Vector2(1.6, 1.05)

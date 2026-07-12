@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="BiomeData" format=3 uid="uid://ba1k7r4ut5ql4"]
+
+[ext_resource type="Script" uid="uid://dfacq88w4yve6" path="res://Scripts/World/biome_data.gd" id="1_47eue"]
+
+[resource]
+script = ExtResource("1_47eue")
+id = "sand"
+tiles = Array[Vector2i]([Vector2i(1, 3)])
+target_temp = 0.8
+target_hum = -0.7
+main_plants = Array[String](["cactus"])
+main_rocks = Array[String](["rock1"])
+use_desert_spacing = true
+metadata/_custom_type_script = "uid://dfacq88w4yve6"

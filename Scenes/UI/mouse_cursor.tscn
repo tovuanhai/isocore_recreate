@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3 uid="uid://8hgyon1kanut"]
+
+[ext_resource type="Texture2D" uid="uid://burai8nxa45h0" path="res://Assets/UI/BookStyles/01_TravelBookLite/Sprites Animated/UI_TravelBook_MouseCursorClick01b_2.png" id="1_4p7qk"]
+[ext_resource type="Script" uid="uid://bmh6st1mem7w2" path="res://Scripts/UI/mouse_cursor.gd" id="2_kbbfw"]
+
+[node name="MouseCursor" type="Sprite2D"]
+z_index = 4096
+texture = ExtResource("1_4p7qk")
+offset = Vector2(5, 6)
+script = ExtResource("2_kbbfw")

@@ -1,0 +1,25 @@
+[gd_scene load_steps=3 format=3 uid="uid://cwgidp4kxh6fc"]
+
+[ext_resource type="Script" uid="uid://bk7w12kpeboh1" path="res://Scripts/UI/crafting_interface.gd" id="1_jkk54"]
+[ext_resource type="StyleBox" uid="uid://dcoln7n3lj0ab" path="res://Resources/UI/panel.tres" id="1_ww7tr"]
+
+[node name="CraftingInterface" type="PanelContainer"]
+custom_minimum_size = Vector2(400, 500)
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_top = -10.0
+offset_right = 350.0
+offset_bottom = 10.0
+grow_vertical = 2
+theme_override_styles/panel = ExtResource("1_ww7tr")
+script = ExtResource("1_jkk54")
+
+[node name="ScrollContainer" type="ScrollContainer" parent="."]
+layout_mode = 2
+mouse_filter = 0
+
+[node name="RecipeList" type="VBoxContainer" parent="ScrollContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3

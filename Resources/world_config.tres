@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="WorldConfig" format=3 uid="uid://llqk107svpil"]
+
+[ext_resource type="Script" uid="uid://c6wkovf5uax84" path="res://Scripts/World/world_config.gd" id="1_2c4nl"]
+[ext_resource type="Script" uid="uid://dfacq88w4yve6" path="res://Scripts/World/biome_data.gd" id="1_cedxd"]
+[ext_resource type="Resource" uid="uid://b6l6qjiiuhkmd" path="res://Resources/Biomes/snow_biome.tres" id="2_mki4r"]
+[ext_resource type="Resource" uid="uid://ba1k7r4ut5ql4" path="res://Resources/Biomes/sand_biome.tres" id="3_ymamj"]
+[ext_resource type="Resource" uid="uid://c62ntk3qpfy7t" path="res://Resources/Biomes/dirt_biome.tres" id="4_euuh5"]
+[ext_resource type="Resource" uid="uid://cd4mc6lqin6e" path="res://Resources/Biomes/beach_biome.tres" id="4_mki4r"]
+[ext_resource type="Resource" uid="uid://l72xq6vq8dbn" path="res://Resources/Biomes/grass_biome.tres" id="5_qjkri"]
+
+[resource]
+script = ExtResource("1_2c4nl")
+available_biomes = Array[ExtResource("1_cedxd")]([ExtResource("3_ymamj"), ExtResource("2_mki4r"), ExtResource("5_qjkri"), ExtResource("4_euuh5"), ExtResource("4_mki4r")])
+object_scenes = Array[String](["Grass_Tree", "rock1", "Snow_Tree", "cattail", "duckweed", "cactus", "Coconut_Tree"])
+metadata/_custom_type_script = "uid://c6wkovf5uax84"

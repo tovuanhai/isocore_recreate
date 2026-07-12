@@ -1,0 +1,139 @@
+[gd_scene load_steps=10 format=3 uid="uid://27mlt80gchhe"]
+
+[ext_resource type="Script" uid="uid://ctp20y1yask7s" path="res://Scripts/UI/InventorySlotUI.gd" id="1_mspnh"]
+[ext_resource type="Texture2D" uid="uid://gjfty1nqi71y" path="res://Assets/UI/BookStyles/01_TravelBookLite/Sprites/UI_TravelBook_Slot01a.png" id="1_udjxj"]
+[ext_resource type="Texture2D" uid="uid://61ihaku5rmtc" path="res://Assets/UI/BookStyles/01_TravelBookLite/Sprites/UI_TravelBook_Select01a.png" id="2_fk50i"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_fk50i"]
+atlas = ExtResource("1_udjxj")
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_q0cgi"]
+bg_color = Color(0.103744, 0.103744, 0.103743, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0m6xl"]
+bg_color = Color(0.917716, 0.138698, 0, 1)
+
+[sub_resource type="Theme" id="Theme_0m6xl"]
+ProgressBar/styles/background = SubResource("StyleBoxFlat_q0cgi")
+ProgressBar/styles/fill = SubResource("StyleBoxFlat_0m6xl")
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_w14qg"]
+bg_color = Color(0.917716, 0.138698, 0, 1)
+
+[sub_resource type="Theme" id="Theme_omr8f"]
+ProgressBar/styles/background = SubResource("StyleBoxFlat_q0cgi")
+ProgressBar/styles/fill = SubResource("StyleBoxFlat_w14qg")
+
+[node name="InventorySlotUI" type="Control"]
+custom_minimum_size = Vector2(85, 80)
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = -288.0
+offset_bottom = -148.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+script = ExtResource("1_mspnh")
+
+[node name="SlotBackground" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = SubResource("AtlasTexture_fk50i")
+
+[node name="Icon" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="DurabilityBar" type="ProgressBar" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -32.0
+offset_top = -16.0
+offset_right = 32.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme = SubResource("Theme_0m6xl")
+show_percentage = false
+
+[node name="ReinforgeBar" type="ProgressBar" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -32.0
+offset_top = -22.0
+offset_right = 32.0
+offset_bottom = -16.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme = SubResource("Theme_omr8f")
+show_percentage = false
+
+[node name="QuantityLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -48.0
+offset_top = -36.0
+offset_right = -7.0
+offset_bottom = -1.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_font_sizes/font_size = 29
+text = "64"
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="HighlightBorder" type="TextureRect" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("2_fk50i")
+
+[node name="HotbarNumberLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -50.5
+offset_top = 9.5
+offset_right = -10.5
+offset_bottom = 50.5
+grow_horizontal = 0
+theme_override_colors/font_color = Color(0.703808, 0.703808, 0.703808, 1)
+theme_override_font_sizes/font_size = 20
+text = "
+"
+horizontal_alignment = 2

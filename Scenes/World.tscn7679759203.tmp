@@ -1,0 +1,33 @@
+[gd_scene load_steps=5 format=3 uid="uid://cus0a667ydguj"]
+
+[ext_resource type="TileSet" uid="uid://0u8hh8mx7hqj" path="res://Scenes/World.tres" id="1_5cjrv"]
+[ext_resource type="Script" uid="uid://dhqx1aw1r1gr5" path="res://Scripts/tile_map.gd" id="1_p70al"]
+[ext_resource type="PackedScene" uid="uid://dw82ffshcw0we" path="res://Scenes/Player.tscn" id="3_5nsto"]
+[ext_resource type="PackedScene" uid="uid://dm2gsuvv6qynt" path="res://Scenes/UI.tscn" id="4_gjpho"]
+
+[node name="Root" type="Node2D"]
+y_sort_enabled = true
+
+[node name="TileMap" type="Node2D" parent="."]
+y_sort_enabled = true
+script = ExtResource("1_p70al")
+
+[node name="Layer0" type="TileMapLayer" parent="TileMap"]
+y_sort_enabled = true
+tile_set = ExtResource("1_5cjrv")
+
+[node name="Layer1" type="TileMapLayer" parent="TileMap"]
+z_index = 1
+y_sort_enabled = true
+tile_set = ExtResource("1_5cjrv")
+
+[node name="Player" parent="." instance=ExtResource("3_5nsto")]
+position = Vector2(-16, -7)
+speed = null
+default_max_hits = null
+indestructible_alternative_id = null
+cliff_height = null
+sprite_fix_x = null
+sprite_fix_y = null
+
+[node name="CanvasLayer" parent="." instance=ExtResource("4_gjpho")]

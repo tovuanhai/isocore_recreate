@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="RecipeData" load_steps=3 format=3 uid="uid://clahcykxw1ndt"]
+
+[ext_resource type="Script" uid="uid://b3ayeyrsb5ndm" path="res://Scripts/Items/recipe_data.gd" id="1_4f4lu"]
+[ext_resource type="Resource" uid="uid://bo54m6g83yn27" path="res://Resources/Items/wooden_bench.tres" id="1_4pnt8"]
+
+[resource]
+script = ExtResource("1_4f4lu")
+recipe_id = ""
+required_station = 0
+ingredients = {
+"stick": 6
+}
+output_item = ExtResource("1_4pnt8")
+output_amount = 1
+metadata/_custom_type_script = "uid://b3ayeyrsb5ndm"

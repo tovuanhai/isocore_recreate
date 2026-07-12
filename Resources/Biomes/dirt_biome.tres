@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="BiomeData" format=3 uid="uid://c62ntk3qpfy7t"]
+
+[ext_resource type="Script" uid="uid://dfacq88w4yve6" path="res://Scripts/World/biome_data.gd" id="1_0o671"]
+
+[resource]
+script = ExtResource("1_0o671")
+id = "dirt"
+tiles = Array[Vector2i]([Vector2i(5, 0), Vector2i(5, 3), Vector2i(9, 0)])
+main_plants = Array[String](["cattail"])
+use_shore_logic = true
+metadata/_custom_type_script = "uid://dfacq88w4yve6"
