@@ -2,17 +2,29 @@
 
 [ext_resource type="TileSet" uid="uid://0u8hh8mx7hqj" path="res://Resources/World.tres" id="1_5cjrv"]
 [ext_resource type="Script" uid="uid://dhqx1aw1r1gr5" path="res://Scripts/World/tile_map.gd" id="1_p70al"]
-[ext_resource type="Resource" uid="uid://llqk107svpil" path="res://Resources/world_config.tres" id="2_kn06e"]
+[ext_resource type="Script" uid="uid://dfacq88w4yve6" path="res://Scripts/World/biome_data.gd" id="2_mvfa8"]
 [ext_resource type="PackedScene" uid="uid://dw82ffshcw0we" path="res://Scenes/Player.tscn" id="3_5nsto"]
+[ext_resource type="Resource" uid="uid://ba1k7r4ut5ql4" path="res://Resources/Biomes/sand_biome.tres" id="3_r0dna"]
+[ext_resource type="Resource" uid="uid://b6l6qjiiuhkmd" path="res://Resources/Biomes/snow_biome.tres" id="4_b5aes"]
 [ext_resource type="PackedScene" uid="uid://dm2gsuvv6qynt" path="res://Scenes/UI/UI.tscn" id="4_gjpho"]
 [ext_resource type="Script" uid="uid://cd3iflck5lh7q" path="res://Scripts/World/world_generator.gd" id="4_kn06e"]
 [ext_resource type="Script" uid="uid://d31bfp0sh33xx" path="res://Scripts/World/chunk_manager.gd" id="5_7yo87"]
+[ext_resource type="Resource" uid="uid://l72xq6vq8dbn" path="res://Resources/Biomes/grass_biome.tres" id="5_w0bku"]
+[ext_resource type="Resource" uid="uid://c62ntk3qpfy7t" path="res://Resources/Biomes/dirt_biome.tres" id="6_0ao37"]
 [ext_resource type="Script" uid="uid://c6vyy7vvq7gcb" path="res://Scripts/World/spawner.gd" id="6_ti1bm"]
+[ext_resource type="Resource" uid="uid://cd4mc6lqin6e" path="res://Resources/Biomes/beach_biome.tres" id="7_d3ars"]
 [ext_resource type="Script" uid="uid://ibk6rusiy4hq" path="res://Scripts/World/hover_manager.gd" id="7_op4cu"]
 [ext_resource type="Texture2D" uid="uid://coww5lumogws8" path="res://Assets/Tileset/Pixel Isometric 16x16/Tiles.png" id="8_7yo87"]
+[ext_resource type="Script" uid="uid://c6wkovf5uax84" path="res://Scripts/World/world_config.gd" id="8_l11rc"]
 [ext_resource type="Script" uid="uid://cccbvw43wgbe8" path="res://Scripts/dynamic_camera.gd" id="9_ti1bm"]
 [ext_resource type="Shader" uid="uid://db3guixnxc0k1" path="res://Resources/Shaders/pixel_clouds.gdshader" id="11_op4cu"]
 [ext_resource type="PackedScene" uid="uid://dr86xjpqn4peh" path="res://Scenes/day_night_manager.tscn" id="12_ti1bm"]
+
+[sub_resource type="Resource" id="Resource_w86vl"]
+script = ExtResource("8_l11rc")
+available_biomes = Array[ExtResource("2_mvfa8")]([ExtResource("3_r0dna"), ExtResource("4_b5aes"), ExtResource("5_w0bku"), ExtResource("6_0ao37"), ExtResource("7_d3ars")])
+object_scenes = Array[String](["Grass_Tree", "rock1", "Snow_Tree", "cattail", "duckweed", "cactus", "Coconut_Tree"])
+metadata/_custom_type_script = "uid://c6wkovf5uax84"
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_ti1bm"]
 atlas = ExtResource("8_7yo87")
@@ -48,7 +60,7 @@ y_sort_enabled = true
 [node name="TileMap" type="Node2D" parent="." unique_id=1360206795]
 y_sort_enabled = true
 script = ExtResource("1_p70al")
-config = ExtResource("2_kn06e")
+config = SubResource("Resource_w86vl")
 
 [node name="Layer0" type="TileMapLayer" parent="TileMap" unique_id=1637500389]
 y_sort_enabled = true

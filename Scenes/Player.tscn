@@ -1,7 +1,6 @@
 [gd_scene format=3 uid="uid://dw82ffshcw0we"]
 
 [ext_resource type="Script" uid="uid://d0v5351220yqk" path="res://Scripts/player.gd" id="1_kyqiw"]
-[ext_resource type="Shader" uid="uid://hh5b5281ovje" path="res://Resources/Shaders/isometric_shadow.gdshader" id="2_arntx"]
 [ext_resource type="Texture2D" uid="uid://bhr64sqblr6fa" path="res://Assets/Character/Cat_1_spritesheet_free.png" id="2_kyqiw"]
 [ext_resource type="Texture2D" uid="uid://dsjc1i52lgbev" path="res://Assets/Character/Cat_1_spritesheet_free_normal.png" id="3_gntrk"]
 [ext_resource type="Script" uid="uid://bt6juh7vue6re" path="res://Scripts/StateManager/state_machine.gd" id="4_dewec"]
@@ -18,14 +17,9 @@
 [ext_resource type="Resource" uid="uid://csjeotbto7qcs" path="res://Resources/Recipes/Tools/recipe_stone_pickaxe.tres" id="15_arntx"]
 [ext_resource type="Resource" uid="uid://csmtsy83ocqdn" path="res://Resources/Recipes/Tools/recipe_wooden_shovel.tres" id="15_lslt6"]
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_kyqiw"]
-radius = 3.1622777
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_lslt6"]
-shader = ExtResource("2_arntx")
-shader_parameter/shadow_color = Color(0, 0, 0, 0.45)
-shader_parameter/base_y = 0.0
-shader_parameter/obj_height = 32.0
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_arntx"]
+radius = 3.0
+height = 8.0
 
 [sub_resource type="CanvasTexture" id="CanvasTexture_dewec"]
 diffuse_texture = ExtResource("2_kyqiw")
@@ -363,13 +357,16 @@ motion_mode = 1
 script = ExtResource("1_kyqiw")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=772506718]
-shape = SubResource("CircleShape2D_kyqiw")
+position = Vector2(0, -1)
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_arntx")
 
 [node name="VisualRoot" type="Node2D" parent="." unique_id=1347570584]
 y_sort_enabled = true
 
-[node name="Sprite2D2" type="Sprite2D" parent="VisualRoot" unique_id=1658783343]
-material = SubResource("ShaderMaterial_lslt6")
+[node name="ShadowSprite" type="Sprite2D" parent="VisualRoot" unique_id=1658783343]
+self_modulate = Color(0, 0, 0, 0.78431374)
+show_behind_parent = true
 texture = SubResource("CanvasTexture_dewec")
 centered = false
 offset = Vector2(-16, -26)
@@ -397,7 +394,6 @@ script = ExtResource("6_52ee3")
 
 [node name="Swim" type="Node" parent="StateMachine" unique_id=1968930889]
 script = ExtResource("8_bhhdu")
-swim_speed_multiplier = 0.75
 
 [node name="Interact" type="Node" parent="StateMachine" unique_id=2025917857]
 script = ExtResource("7_bhhdu")
