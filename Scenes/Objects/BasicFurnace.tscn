@@ -17,7 +17,7 @@ script = ExtResource("1_7tntu")
 
 [node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="." unique_id=1358752082]
 position = Vector2(0, 3)
-polygon = PackedVector2Array(0, 0, -14, -7, 0, -15, 14, -7)
+polygon = PackedVector2Array(0, 0, -14, -4, -14, -10, 0, -15, 14, -10, 14, -4)
 
 [node name="Sprite2D2" type="Sprite2D" parent="." unique_id=1683656144 groups=["isometric_shadows"]]
 material = SubResource("ShaderMaterial_6ue8a")
@@ -28,7 +28,7 @@ offset = Vector2(-16, -31)
 region_enabled = true
 region_rect = Rect2(0, 48, 32, 32)
 
-[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1052751447]
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1052751447 groups=["occluders"]]
 position = Vector2(0, 3)
 texture = ExtResource("3_54qey")
 centered = false

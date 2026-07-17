@@ -23,7 +23,7 @@ offset = Vector2(-16, -40)
 region_enabled = true
 region_rect = Rect2(64, 0, 32, 48)
 
-[node name="Sprite2D2" type="Sprite2D" parent="." unique_id=440654034]
+[node name="Sprite2D2" type="Sprite2D" parent="." unique_id=440654034 groups=["occluders"]]
 y_sort_enabled = true
 texture = ExtResource("3_wvl84")
 centered = false

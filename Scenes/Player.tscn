@@ -13,6 +13,7 @@
 [ext_resource type="Script" uid="uid://dn3vgcldx2bgn" path="res://Scripts/input_handler.gd" id="10_yoq75"]
 [ext_resource type="Script" uid="uid://csckkbmwk5jow" path="res://Scripts/Components/PlayerInventoryComponent.gd" id="11_ksbbd"]
 [ext_resource type="Script" uid="uid://cwq1fsprt48k4" path="res://Scripts/Components/PlayerBuilderComponent.gd" id="12_glx4g"]
+[ext_resource type="Script" uid="uid://bb1gfg0cxrs5" path="res://Scripts/ManagerScripts/occlusion_manager.gd" id="12_lslt6"]
 [ext_resource type="Script" uid="uid://bkjik520ffigr" path="res://Scripts/Components/player_crafting_component.gd" id="13_miouo"]
 [ext_resource type="Resource" uid="uid://csjeotbto7qcs" path="res://Resources/Recipes/Tools/recipe_stone_pickaxe.tres" id="15_arntx"]
 [ext_resource type="Resource" uid="uid://csmtsy83ocqdn" path="res://Resources/Recipes/Tools/recipe_wooden_shovel.tres" id="15_lslt6"]
@@ -408,6 +409,7 @@ script = ExtResource("9_megsn")
 script = ExtResource("10_yoq75")
 
 [node name="OcclusionManager" type="Node" parent="." unique_id=2069072738]
+script = ExtResource("12_lslt6")
 
 [node name="PlayerInventoryComponent" type="Node" parent="." unique_id=1794245248]
 script = ExtResource("11_ksbbd")

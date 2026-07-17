@@ -1,176 +1,130 @@
-# occlusion_manager.gd
 extends Node
 
 @onready var player: Player = get_parent()
 
-@export var min_opacity: float = 0.5
-@export var fade_speed: float = 8.0
-@export var check_radius: int = 3
+var occluded_cells: Array[Vector2i] = []
+var occluded_objects: Array[Node2D] = [] 
 
-# { Node -> target_opacity } — chỉ track spawned objects
-var _fading_objects: Dictionary = {}
-
-# { Vector2i -> Polygon2D } — overlay polygon cho từng tile đang bị fade
-var _tile_overlays: Dictionary = {}
-
-# Màu overlay che tile (đen trong suốt)
-const TILE_SIZE_HALF = Vector2(8, 4)  # half-size của 1 iso tile, chỉnh theo tileset
-
-
-func _process(delta: float) -> void:
-	if not player.tile_map_node: return
-
-	var occluders = _find_occluders()
-
-	_process_objects(occluders.get("objects", {}), delta)
-	_process_tiles(occluders.get("tiles", {}), delta)
-
-
-# ============================================================
-# OBJECTS — fade node trực tiếp
-# ============================================================
-
-func _process_objects(occluding_objects: Dictionary, delta: float) -> void:
-	# Object không còn che → fade về 1.0
-	for node in _fading_objects.keys():
-		if not is_instance_valid(node):
-			_fading_objects.erase(node)
-			continue
-		if not occluding_objects.has(node):
-			_fading_objects[node] = 1.0
-
-	for node in occluding_objects.keys():
-		_fading_objects[node] = occluding_objects[node]
-
-	var to_remove = []
-	for node in _fading_objects.keys():
-		if not is_instance_valid(node):
-			to_remove.append(node)
-			continue
-		var target: float = _fading_objects[node]
-		node.modulate.a = lerp(node.modulate.a, target, fade_speed * delta)
-		if abs(node.modulate.a - 1.0) < 0.01 and target == 1.0:
-			node.modulate.a = 1.0
-			to_remove.append(node)
-
-	for node in to_remove:
-		_fading_objects.erase(node)
-
-
-# ============================================================
-# TILES — dùng Polygon2D overlay vì không có per-cell modulate
-# ============================================================
-
-func _process_tiles(occluding_tiles: Dictionary, delta: float) -> void:
-	var tile_map = player.tile_map_node
-
-	# Tile không còn che → fade overlay về alpha 0 rồi xóa
-	for cell in _tile_overlays.keys():
-		if not occluding_tiles.has(cell):
-			var poly = _tile_overlays[cell]
-			if is_instance_valid(poly):
-				var new_a = lerp(poly.color.a, 0.0, fade_speed * delta)
-				poly.color.a = new_a
-				if new_a < 0.01:
-					poly.queue_free()
-					_tile_overlays.erase(cell)
-
-	# Tile đang che → tạo hoặc update overlay
-	for cell in occluding_tiles.keys():
-		var target_opacity: float = occluding_tiles[cell]
-		# alpha của overlay = 1.0 - target_opacity
-		# (target_opacity=0.5 → overlay alpha=0.5 → che 50%)
-		var target_alpha = 1.0 - target_opacity
-
-		if not _tile_overlays.has(cell):
-			_tile_overlays[cell] = _create_tile_overlay(cell, tile_map)
-
-		var poly = _tile_overlays[cell]
-		if is_instance_valid(poly):
-			var new_a = lerp(poly.color.a, target_alpha, fade_speed * delta)
-			poly.color = Color(0, 0, 0, new_a)
-
-
-func _create_tile_overlay(cell: Vector2i, tile_map) -> Polygon2D:
-	var poly = Polygon2D.new()
-	# Hình thoi iso tile chuẩn
-	poly.polygon = PackedVector2Array([
-		Vector2(0, -TILE_SIZE_HALF.y),
-		Vector2(TILE_SIZE_HALF.x, 0),
-		Vector2(0, TILE_SIZE_HALF.y),
-		Vector2(-TILE_SIZE_HALF.x, 0)
-	])
-	poly.color = Color(0, 0, 0, 0)
-	poly.top_level = true
-	poly.z_index = 200
-
-	# Đặt vị trí đúng tile trên đúng layer
-	var cell_elev = tile_map.world_data[cell].get("z", 0)
-	var layer = tile_map.ground_layers[cell_elev]
-	poly.global_position = layer.to_global(layer.map_to_local(cell))
-
-	tile_map.add_child(poly)
-	return poly
-
-
-# ============================================================
-# TÌM OCCLUDERS
-# ============================================================
-
-func _find_occluders() -> Dictionary:
-	var objects: Dictionary = {}
-	var tiles: Dictionary = {}
-	var tile_map = player.tile_map_node
+func _process(_delta: float) -> void:
+	if not is_instance_valid(player.tile_map_node): return
+	
+	var p_pos = player.sprite2.global_position 
 	var player_cell = player.get_current_cell()
-	var player_elev = player.current_elevation
+	
+	# ==========================================
+	# 1. RADAR QUÉT TILEMAP (BẢO VỆ CÙNG TẦNG KHÔNG BỊ MỜ)
+	# ==========================================
+	var current_occluding_cells: Array[Vector2i] = []
+	
+	var front_cells = [
+		player_cell + Vector2i(1, 0), 
+		player_cell + Vector2i(0, 1), 
+		player_cell + Vector2i(1, 1)  
+	]
+	
+	for test_cell in front_cells:
+		if not player.tile_map_node.world_data.has(test_cell): continue
+		
+		var cell_z = MovementUtils._get_walkable_elevation(player.tile_map_node, test_cell)
+		
+		# 🎯 LUẬT THÉP CỦA ÔNG: Chỉ những ô CAO HƠN con mèo mới được phép xét làm mờ!
+		# Cùng tầng (cell_z == current_elevation) hoặc thấp hơn -> Lơ đi luôn!
+		if cell_z > player.current_elevation:
+			
+			# Nếu là vách núi che khuất, làm mờ nó và các block dọc xuống dưới màn hình
+			var height_diff = cell_z - player.current_elevation
+			for i in range(height_diff + 1):
+				var cliff_body = test_cell + Vector2i(i, i)
+				
+				# Chống mờ nhầm cái nền đất mèo đang dẫm lên
+				if cliff_body != player_cell:
+					current_occluding_cells.append(cliff_body)
 
-	for x in range(-check_radius, check_radius + 1):
-		for y in range(-check_radius, check_radius + 1):
-			var cell = player_cell + Vector2i(x, y)
-			if not tile_map.world_data.has(cell): continue
-
-			var data = tile_map.world_data[cell]
-			var cell_elev = data.get("z", 0)
-
-			if not _is_occluding(cell, player_cell, player_elev, cell_elev): continue
-
-			var dist = Vector2(float(x), float(y)).length()
-			var normalized = clampf(dist / float(check_radius), 0.0, 1.0)
-			var target_opacity = lerp(min_opacity, 1.0, normalized)
-
-			# Objects
-			if tile_map.spawned_objects.has(cell):
-				var obj = tile_map.spawned_objects[cell]
-				if is_instance_valid(obj):
-					if objects.has(obj):
-						objects[obj] = min(objects[obj], target_opacity)
-					else:
-						objects[obj] = target_opacity
-
-			# Tiles — chỉ các tầng cao hơn player
-			for h in range(player_elev + 1, cell_elev + 1):
-				if h >= tile_map.ground_layers.size(): break
-				var layer = tile_map.ground_layers[h]
-				if layer.get_cell_source_id(cell) != -1:
-					var tile_key = cell  # 1 overlay per cell (lấy tầng cao nhất)
-					if tiles.has(tile_key):
-						tiles[tile_key] = min(tiles[tile_key], target_opacity)
-					else:
-						tiles[tile_key] = target_opacity
-
-	return {"objects": objects, "tiles": tiles}
+	# Hoàn trả & Đổi màu Tile
+	for cell in occluded_cells:
+		if not current_occluding_cells.has(cell): _set_tile_transparent(cell, false)
+	for cell in current_occluding_cells:
+		if not occluded_cells.has(cell): _set_tile_transparent(cell, true)
+	occluded_cells = current_occluding_cells
 
 
-func _is_occluding(cell: Vector2i, player_cell: Vector2i, player_elev: int, cell_elev: int) -> bool:
-	# Phải cao hơn player
-	if cell_elev <= player_elev: return false
+	# ==========================================
+	# 2. RADAR QUÉT VẬT THỂ RỜI (BẤT TỬ VỚI REGION VÀ OFFSET SPRITE)
+	# ==========================================
+	var current_occluding_objs: Array[Node2D] = []
+	var all_occluders = get_tree().get_nodes_in_group("occluders")
+	
+	# Nhấc tâm quét lên ngực mèo
+	var cat_center = p_pos
+	#var cat_center = p_pos + Vector2(0, -12) 
 
-	var dy = cell.y - player_cell.y
-	var dx = cell.x - player_cell.x
+	for obj in all_occluders:
+		if not is_instance_valid(obj): continue
+		
+		# 🎯 Y-SORT CHUẨN XÁC: So sánh thẳng bằng Tọa độ gốc của Object
+		# (Vì ông nhấc Sprite lên, nên gốc obj.global_position.y chính là chân thật của nó)
+		if obj.global_position.y > p_pos.y:
+			
+			# Lục tìm Sprite2D bên trong
+			var sprites = []
+			if obj is Sprite2D: sprites.append(obj)
+			for child in obj.get_children():
+				if child is Sprite2D: sprites.append(child)
+				
+			var is_occluding = false
+			for sprite in sprites:
+				if sprite.texture:
+					# 🎯 Lấy Khung hình nguyên bản của ảnh 
+					# (Hàm này TỰ ĐỘNG nhận diện Region cắt, Offset, và Centered!)
+					var local_rect = sprite.get_rect()
+					
+					# Phép thuật: Kéo tọa độ ngực mèo vào chung "Không gian của bức ảnh"
+					var local_cat_center = sprite.to_local(cat_center)
+					
+					# Xét xem ngực mèo có lọt vào bên trong bức ảnh đã bị cắt Region không?
+					if local_rect.grow(-4.0).has_point(local_cat_center):
+						is_occluding = true
+						break 
+			
+			if is_occluding: current_occluding_objs.append(obj)
+				
+	# Hoàn trả & Đổi màu Object
+	for obj in occluded_objects:
+		if not current_occluding_objs.has(obj): _fade_object(obj, false)
+	for obj in current_occluding_objs:
+		if not occluded_objects.has(obj): _fade_object(obj, true)
+	occluded_objects = current_occluding_objs
 
-	# Phải nằm phía trên player trên màn hình (dy <= 0)
-	if dy > 0: return false
-	# Không lệch ngang quá nhiều
-	if abs(dx) > abs(dy) + 1: return false
+# ==========================================
+# HÀM XỬ LÝ ĐỒ HỌA
+# ==========================================
+func _set_tile_transparent(cell: Vector2i, is_transparent: bool) -> void:
+	var layers: Array[TileMapLayer] = []
+	if player.tile_map_node:
+		for child in player.tile_map_node.get_children():
+			if child is TileMapLayer: layers.append(child)
+			
+	if layers.is_empty() and "base_ground" in player.tile_map_node: 
+		layers.append(player.tile_map_node.base_ground)
+			
+	for i in range(layers.size()):
+		# Lớp bọc thép thứ 2: Tuyệt đối không làm mờ layer cùng tầng hoặc thấp hơn
+		if i <= player.current_elevation:
+			continue
 
-	return true
+		var layer = layers[i]
+		var source_id = layer.get_cell_source_id(cell)
+		if source_id != -1: 
+			var atlas_coords = layer.get_cell_atlas_coords(cell)
+			var alt_id = 1 if is_transparent else 0
+			layer.set_cell(cell, source_id, atlas_coords, alt_id)
+
+func _fade_object(obj: Node2D, is_fading: bool) -> void:
+	var target_alpha = 0.3 if is_fading else 1.0
+	if obj.has_meta("fade_tween"):
+		var old_tween = obj.get_meta("fade_tween")
+		if is_instance_valid(old_tween) and old_tween.is_valid():
+			old_tween.kill()
+	var tween = get_tree().create_tween()
+	obj.set_meta("fade_tween", tween)
+	tween.tween_property(obj, "modulate:a", target_alpha, 0.2).set_trans(Tween.TRANS_SINE)

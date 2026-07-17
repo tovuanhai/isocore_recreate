@@ -57,6 +57,7 @@ folder_colors={
 [global_group]
 
 isometric_shadows=""
+occluders=""
 
 [gui]
 

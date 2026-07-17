@@ -41,7 +41,9 @@ func init(z: int, cliff_h: int) -> void:
 				
 				child.material.set_shader_parameter("base_y", bottom_y - pivot_offset)
 				child.material.set_shader_parameter("obj_height", tex_h)
-
+		elif child is VisibleOnScreenNotifier2D:
+			child.position.y -= elev_shift
+			
 # Bật hiển thị -> Y-Sort hoạt động lại
 func _on_screen_entered() -> void:
 	var main_sprite = get_node_or_null("Sprite2D2")

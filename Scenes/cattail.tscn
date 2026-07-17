@@ -27,7 +27,7 @@ offset = Vector2(-8, -27)
 region_enabled = true
 region_rect = Rect2(0, 0, 16, 32)
 
-[node name="Sprite2D2" type="Sprite2D" parent="." unique_id=583627788]
+[node name="Sprite2D2" type="Sprite2D" parent="." unique_id=583627788 groups=["occluders"]]
 texture = ExtResource("1_ngi13")
 centered = false
 offset = Vector2(-8, -27)
