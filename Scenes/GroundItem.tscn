@@ -1,7 +1,8 @@
-[gd_scene load_steps=5 format=3 uid="uid://htlsxdaclt2f"]
+[gd_scene format=3 uid="uid://htlsxdaclt2f"]
 
 [ext_resource type="Script" uid="uid://dlp0f8la2aryn" path="res://Scripts/World/ground_item.gd" id="1_4or6o"]
 [ext_resource type="Shader" uid="uid://hh5b5281ovje" path="res://Resources/Shaders/isometric_shadow.gdshader" id="2_7m7j7"]
+[ext_resource type="Script" uid="uid://bbsey8qej22bd" path="res://Scripts/Components/occlusion_component.gd" id="3_nbdc3"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_sw83q"]
 radius = 6.0
@@ -12,23 +13,26 @@ shader_parameter/shadow_color = Color(0, 0, 0, 0.45)
 shader_parameter/base_y = 0.0
 shader_parameter/obj_height = 32.0
 
-[node name="GroundItem" type="Area2D"]
-z_index = 1
+[node name="GroundItem" type="Area2D" unique_id=1583398775]
 y_sort_enabled = true
 collision_layer = 4
 collision_mask = 2
 script = ExtResource("1_4or6o")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=727016991]
 shape = SubResource("CircleShape2D_sw83q")
 
-[node name="Sprite2D2" type="Sprite2D" parent="." groups=["isometric_shadows"]]
+[node name="Sprite2D2" type="Sprite2D" parent="." unique_id=1842416430 groups=["isometric_shadows"]]
 material = SubResource("ShaderMaterial_nbdc3")
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=990750395]
 
-[node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="."]
+[node name="VisibleOnScreenNotifier2D" type="VisibleOnScreenNotifier2D" parent="." unique_id=1209987824]
 position = Vector2(9.53674e-07, -9.53674e-07)
-scale = Vector2(1, 1)
+
+[node name="OcclusionComponent" type="Node" parent="." unique_id=38577165 node_paths=PackedStringArray("target_sprite")]
+script = ExtResource("3_nbdc3")
+target_sprite = NodePath("../Sprite2D")
+metadata/_custom_type_script = "uid://bbsey8qej22bd"
 
 [connection signal="body_entered" from="." to="." method="_on_body_entered"]

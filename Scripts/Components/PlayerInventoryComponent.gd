@@ -21,11 +21,10 @@ func _ready() -> void:
 	GameEvents.drop_item_requested.connect(_on_drop_item_requested)
 	
 	# TEST: Tự động nhét hòm vào túi
-	var test_chest = load("res://Resources/Items/wooden_chest.tres")
-	if test_chest:
-		inventory.add_item(test_chest, 1)
+	var test_shovel = load("res://Resources/Items/wooden_shovel.tres")
 	var test_furnace = load("res://Resources/Items/basic_furnace.tres")
 	if test_furnace:
+		inventory.add_item(test_shovel, 1)
 		inventory.add_item(test_furnace, 1)
 
 
